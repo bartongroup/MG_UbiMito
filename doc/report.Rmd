@@ -1,0 +1,101 @@
+---
+title: "Mitochondrial ubiquitin landscape in neurons"
+author: "Marek Gierlinski"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    css: tabbed_notebook.css
+---
+
+Collaborators: Miratul Muqit
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE,
+  echo = FALSE,
+  cache = TRUE
+)
+library(drake)
+library(kableExtra)
+library(tidyverse)
+
+myKable <- function(df, row.names=FALSE, col.names=NA, digits=2, bootstrap="condensed", font.size=12, label=NULL, ...) {
+  kable(df, format="html", row.names=row.names, col.names=col.names, digits=digits, label=label, ...) %>% kable_styling(bootstrap_options=bootstrap, full_width=FALSE, position="left", font_size=font.size)
+}
+N <- function(n) prettyNum(n, big.mark = ",")
+```
+
+# {.tabset}
+
+## Data
+
+Data came from quantitative diGlycine (diGly) capture proteomics to identify Parkin-dependent ubiquitylation. The experiment was carried out in two conditions, unstimulated/basal (UT) and stimulated/depolarised (AO) in five replicates each. The total proteome was also analysed.
+
+There are `r N(readd(kgg_n_sites))` sites on `r N(readd(kgg_n_prot))` individual proteins in the diGly data. There are `r N(readd(total_n_prot))` proteins in the total proteome data.
+
+## Databases
+
+### MitoCarta
+
+We use [MitoCarta 2.0](https://www.broadinstitute.org/files/shared/metabolism/mitocarta/human.mitocarta2.0.html) to identify mitochondrial proteins. This database contains `r N(readd(n_mito))` genes.
+
+### E2 enzymes and E3 ligases
+
+We identify E2 and E3 using [UbiHub](https://ubihub.thesgc.org/static/UbiHub.html). We have the following numbers of enzymes and ligases in this database:
+
+```{r ubihub}
+readd(ubihub) %>% group_by(ubi_part) %>% tally() %>% rename(type = ubi_part) %>% myKable()
+```
+
+
+## Results
+
+```{r ubi_tot_mito}
+loadd(kgg_mito, tot_mito)
+
+```
+
+### Identity of ubiquitylated proteins
+
+Since we do not have sub-compartment data yet (it will come with MitoCarta 3.0), we can only identify which ubiquitilated proteins are in the MitoCarta database. However, these are already identified in the Excel file.
+
+There are `r N(readd(n_kgg_in_mito))` diGly proteins in MitoCarta database. None of them is E2 or E3.
+
+```{r ubi_mito}
+kgg_mito %>%
+  filter(in_mito) %>% 
+  select(uniprot, gene_name, site_position, description, p_value, log_fc) %>% 
+  myKable() %>% 
+  scroll_box(width="100%", height="300px")
+```
+
+### Whole proteome E2/E3 
+
+We have the following E2 enzymes and E3 ligases in mitochondria:
+
+```{r tot_mito}
+tot_mito %>% 
+  filter(in_mito & !is.na(ubi_part)) %>% 
+  myKable()
+```
+
+```{r tot_not_mito}
+tot_not_mito <- tot_mito %>% 
+  filter(!in_mito & !is.na(ubi_part))
+```
+
+Outside mitochondria, we identify following numbers of E2/E3:
+
+```{r tot_not_mito_nums}
+tot_not_mito %>% group_by(ubi_part) %>% tally() %>% myKable()
+```
+
+Here is a full table of these proteins.
+
+```{r tot_not_mito_tab}
+tot_not_mito %>% 
+  myKable() %>% 
+  scroll_box(width="100%", height="300px")
+```
+
