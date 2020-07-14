@@ -24,6 +24,8 @@ myKable <- function(df, row.names=FALSE, col.names=NA, digits=2, bootstrap="cond
   kable(df, format="html", row.names=row.names, col.names=col.names, digits=digits, label=label, ...) %>% kable_styling(bootstrap_options=bootstrap, full_width=FALSE, position="left", font_size=font.size)
 }
 N <- function(n) prettyNum(n, big.mark = ",")
+
+public_html <- "http://www.compbio.dundee.ac.uk/user/mgierlinski/ubimito"
 ```
 
 # {.tabset}
@@ -56,11 +58,28 @@ loadd(kgg_mito, tot_mito)
 
 ```
 
+### Differential expression
+
+Proteomics data came with Welch's t-test p-values and fold changes. I am not sure if these are corrected for multiple tests.
+
+Here, we re-do differential expression analysis using a more sophisticated tool, `limmma` and making sure that p-values are corrected for multiple tests. `limma` borrows information across features (sites) in order to moderate variance. We also normalise each ratio to its median. The raw data medians are close, but not equal to one, so this step reduces variance between replicates slightly and improves power of the test.
+
+Result is not very different from the original Welch's tests. Without the normalisation step, the numbers of significant sites (diGly) is very similar. With normalisation and using `limma`, we get `r N(readd(n_kgg_de_fdr))` statistically significant sites. The Welch's p-value gives `r N(readd(n_kgg_de_welch))` DE sites. The difference is mostly due to normalisation step.
+
+This figure shows a volcano plot. Black points indicate data present in MitoCarta. The dashed horizontal line shows the significance limit, FDR = 0.05.
+
+```{r kgg_volcano, fig.width=4, fig.height=4}
+readd(fig_kgg_volcano)
+kgg_de_link <- file.path(public_html, "tab/kgg_de.tsv")
+```
+
+[Download data](`r kgg_de_link)
+
 ### Identity of ubiquitylated proteins
 
 Since we do not have sub-compartment data yet (it will come with MitoCarta 3.0), we can only identify which ubiquitilated proteins are in the MitoCarta database. However, these are already identified in the Excel file.
 
-There are `r N(readd(n_kgg_in_mito))` diGly proteins in MitoCarta database. None of them is E2 or E3.
+As we want proteins in basal state, we select only diGly proteins that are detected in the total proteome. This gives us `r N(readd(kgg_n_prot_basal))` proteins. Out of these, there are `r N(readd(n_kgg_in_mito))` diGly proteins in MitoCarta database. None of them is E2 or E3.
 
 ```{r ubi_mito}
 kgg_mito %>%
@@ -68,7 +87,11 @@ kgg_mito %>%
   select(uniprot, gene_name, site_position, description, p_value, log_fc) %>% 
   myKable() %>% 
   scroll_box(width="100%", height="300px")
+
+kgg_mito_link <- file.path(public_html, "tab/kgg_mito.tsv")
 ```
+
+[Download data](`r kgg_mito_link)
 
 ### Whole proteome E2/E3 
 
@@ -97,5 +120,8 @@ Here is a full table of these proteins.
 tot_not_mito %>% 
   myKable() %>% 
   scroll_box(width="100%", height="300px")
+
+total_mito_link <- file.path(public_html, "tab/total_mito.tsv")
 ```
 
+[Download data](`r total_mito_link)

@@ -1,13 +1,23 @@
-source("R/packages.R")
-source("R/data.R")
-source("R/compare.R")
-source("drake/plan.R")
+options(dplyr.summarise.inform = FALSE)
 
+files_R <- list.files("R", pattern="*.R$", full.names=TRUE)
+sr_ <- sapply(files_R, source)
+
+files_drake <- list.files("drake", pattern="*.R$", full.names=TRUE)
+sd_ <- sapply(files_drake, source)
+
+sesinfo <- drake_plan(
+  session_info = sessionInfo()
+)
 
 plan <- bind_rows(
   get_data,
+  process_data,
   get_numbers,
-  compare_data
+  compare_data,
+  make_figures,
+  save_tables,
+  sesinfo
 )
 
 cfg <- drake_config(plan)
