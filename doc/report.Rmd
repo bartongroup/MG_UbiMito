@@ -73,7 +73,7 @@ readd(fig_kgg_volcano)
 kgg_de_link <- file.path(public_html, "tab/kgg_de.tsv")
 ```
 
-[Download data](`r kgg_de_link)
+[Download data](`r kgg_de_link`)
 
 ### Identity of ubiquitylated proteins
 
@@ -91,7 +91,7 @@ kgg_mito %>%
 kgg_mito_link <- file.path(public_html, "tab/kgg_mito.tsv")
 ```
 
-[Download data](`r kgg_mito_link)
+[Download data](`r kgg_mito_link`)
 
 ### Whole proteome E2/E3 
 
@@ -124,4 +124,4 @@ tot_not_mito %>%
 total_mito_link <- file.path(public_html, "tab/total_mito.tsv")
 ```
 
-[Download data](`r total_mito_link)
+[Download data](`r total_mito_link`)
