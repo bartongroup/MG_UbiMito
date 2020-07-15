@@ -81,12 +81,20 @@ Since we do not have sub-compartment data yet (it will come with MitoCarta 3.0),
 
 As we want proteins in basal state, we select only diGly proteins that are detected in the total proteome. This gives us `r N(readd(kgg_n_prot_basal))` proteins. Out of these, there are `r N(readd(n_kgg_in_mito))` diGly proteins in MitoCarta database. None of them is E2 or E3.
 
-```{r ubi_mito}
+```{r datatable_settings, message=FALSE, warning=FALSE}
+dummy <- DT:::DT2BSClass(c('compact', 'cell-border'))
+```
+
+
+```{r ubi_mito, cache=FALSE}
 kgg_mito %>%
   filter(in_mito) %>% 
-  select(uniprot, gene_name, site_position, description, p_value, log_fc) %>% 
-  myKable() %>% 
-  scroll_box(width="100%", height="300px")
+  select(uniprot, gene_name, site_position, description, p_value, fdr, log_fc) %>% 
+  #myKable() %>% 
+  #scroll_box(width="100%", height="300px")
+  DT::datatable() %>% 
+  DT::formatSignif(c("p_value", "fdr", "log_fc"), 2) %>% 
+  DT::formatStyle(columns = colnames(.$x$data), fontSize = '80%')
 
 kgg_mito_link <- file.path(public_html, "tab/kgg_mito.tsv")
 ```
@@ -95,31 +103,23 @@ kgg_mito_link <- file.path(public_html, "tab/kgg_mito.tsv")
 
 ### Whole proteome E2/E3 
 
-We have the following E2 enzymes and E3 ligases in mitochondria:
-
-```{r tot_mito}
-tot_mito %>% 
-  filter(in_mito & !is.na(ubi_part)) %>% 
-  myKable()
-```
-
-```{r tot_not_mito}
-tot_not_mito <- tot_mito %>% 
-  filter(!in_mito & !is.na(ubi_part))
-```
-
-Outside mitochondria, we identify following numbers of E2/E3:
+We identify following numbers of E2/E3 inside and outside of mitochondria:
 
 ```{r tot_not_mito_nums}
-tot_not_mito %>% group_by(ubi_part) %>% tally() %>% myKable()
+tot_mito %>% group_by(ubi_part, in_mito) %>% tally() %>% drop_na() %>% arrange(in_mito) %>% myKable()
 ```
 
 Here is a full table of these proteins.
 
-```{r tot_not_mito_tab}
-tot_not_mito %>% 
-  myKable() %>% 
-  scroll_box(width="100%", height="300px")
+```{r tot_mito_tab, cache=FALSE}
+tot_mito %>% 
+  select(-id) %>% 
+  filter(!is.na(ubi_part)) %>% 
+  DT::datatable() %>% 
+  DT::formatSignif(c("p_value", "fdr", "log_fc"), 2) %>% 
+  DT::formatStyle(columns = colnames(.$x$data), fontSize = '80%')
+  #myKable() %>% 
+  #scroll_box(width="100%", height="300px")
 
 total_mito_link <- file.path(public_html, "tab/total_mito.tsv")
 ```
