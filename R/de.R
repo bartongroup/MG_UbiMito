@@ -62,7 +62,7 @@ plotVolcano <- function(res, fc="logFC", p="PValue", fdr="FDR", group="contrast"
 plot_protein_sites <- function(d, gene, cex=3) {
   nd <- d %>% 
     pivot_longer(cols=UT1_Ratio:AO5_Ratio, names_to="colname") %>%
-    select(id, gene_name, colname, value, site_id) %>% 
+    select(id, gene_name, colname, value, site_position, fdr) %>% 
     mutate(sample = str_remove(colname, "_.atio")) %>% 
     mutate(group = str_remove(sample, "\\d") %>% as_factor() %>% fct_relevel("UT")) %>% 
     group_by(sample) %>% 
@@ -71,10 +71,15 @@ plot_protein_sites <- function(d, gene, cex=3) {
     
   nd %>%
     filter(gene_name == gene) %>% 
-  ggplot(aes(x=group, y=log2(value))) +
+    mutate(pos = str_extract(site_position, "^\\d+") %>% as.integer()) %>% 
+    arrange(pos) %>% 
+    mutate(site_position = as_factor(site_position))  %>% 
+  ggplot(aes(x=group, y=log2(value_norm), colour=fdr<0.05)) +
     theme_bw() +
-    theme(panel.grid = element_blank()) +
+    theme(panel.grid = element_blank(), legend.position = "none") +
     geom_hline(yintercept = 0, colour="grey80") +
     geom_beeswarm(cex=cex) +
-    facet_wrap(~site_id, nrow=1) 
+    facet_wrap(~site_position, nrow=1) +
+    scale_colour_manual(values=c("grey", "black")) +
+    labs(x=NULL, y=expression(log[2]~Ratio))
 }
