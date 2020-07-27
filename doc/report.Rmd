@@ -73,6 +73,7 @@ readd(fig_kgg_volcano)
 kgg_de_link <- file.path(public_html, "tab/kgg_de.tsv")
 ```
 
+
 [Download data](`r kgg_de_link`)
 
 ### Identity of ubiquitylated proteins
@@ -125,3 +126,11 @@ total_mito_link <- file.path(public_html, "tab/total_mito.tsv")
 ```
 
 [Download data](`r total_mito_link`)
+
+### Changing sites
+
+The next figure shows how individual sites in each protein change. Only diGly proteins present in MitoCarta are included. Glycolysation sites are simply indexed 1, 2, 3,... from the smallest to the largest position in the protein. White fill indicates non-significant change (FDR > 0.05).
+
+```{r mito_change, fig.width=5, fig.height=16}
+readd(fig_mito_change) 
+```

@@ -59,3 +59,22 @@ plotVolcano <- function(res, fc="logFC", p="PValue", fdr="FDR", group="contrast"
 }
 
 
+plot_protein_sites <- function(d, gene, cex=3) {
+  nd <- d %>% 
+    pivot_longer(cols=UT1_Ratio:AO5_Ratio, names_to="colname") %>%
+    select(id, gene_name, colname, value, site_id) %>% 
+    mutate(sample = str_remove(colname, "_.atio")) %>% 
+    mutate(group = str_remove(sample, "\\d") %>% as_factor() %>% fct_relevel("UT")) %>% 
+    group_by(sample) %>% 
+    mutate(med = median(value, na.rm=TRUE)) %>% 
+    mutate(value_norm = value / med)
+    
+  nd %>%
+    filter(gene_name == gene) %>% 
+  ggplot(aes(x=group, y=log2(value))) +
+    theme_bw() +
+    theme(panel.grid = element_blank()) +
+    geom_hline(yintercept = 0, colour="grey80") +
+    geom_beeswarm(cex=cex) +
+    facet_wrap(~site_id, nrow=1) 
+}

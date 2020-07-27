@@ -26,12 +26,14 @@ get_numbers <- drake_plan(
 
 compare_data <- drake_plan(
   kgg_mito = merge_prot_mito(prot$kgg_basal, mito, ubihub, "site_position"),
-  tot_mito = merge_prot_mito(prot$total, mito, ubihub)  
+  tot_mito = merge_prot_mito(prot$total, mito, ubihub),
+  all_data = merge_all(prot, mito, ubihub)
 )
 
 make_figures <- drake_plan(
   kgg_in_mito = kgg_mito %>% filter(in_mito) %>% pull(id),
-  fig_kgg_volcano = plotVolcano(prot$kgg, fc="log_fc",  fdr="fdr", p="p_value", sel=kgg_in_mito)
+  fig_kgg_volcano = plotVolcano(prot$kgg, fc="log_fc",  fdr="fdr", p="p_value", sel=kgg_in_mito),
+  fig_mito_change = plot_mito_change(all_data)
 )
 
 save_tables <- drake_plan(
