@@ -36,50 +36,5 @@ diff_expr <- function(prot) {
 }
 
 
-plotVolcano <- function(res, fc="logFC", p="PValue", fdr="FDR", group="contrast",
-                        alpha=0.05, point.size=0.5, point.alpha=0.5, sel=NULL) {
-  r <- res %>%
-    mutate(
-      x = !!as.name(fc),
-      y = !!as.name(p),
-      fdr = !!as.name(fdr),
-      mrk = 1L
-    )
-  lmt <- max(r %>% filter(fdr<0.05) %>% pull(y))
-  if(!is.null(sel)) r <- r %>% mutate(mrk = if_else(id %in% sel, 2L, mrk))
-  ggplot(r, aes(x=x, y=-log10(y), colour=as.factor(mrk))) +
-    theme_bw() +
-    theme(panel.grid.minor = element_blank()) +
-    geom_point(size=point.size, alpha=point.alpha) +
-    scale_colour_manual(values=c("grey70", "black")) +
-    #facet_grid(as.formula(glue::glue(". ~ {group}"))) +
-    theme(legend.position = "none") +
-    geom_hline(yintercept = -log10(lmt), colour="red", linetype="dashed") +
-    labs(x=fc, y=glue::glue("-log10({p})"))
-}
 
 
-plot_protein_sites <- function(d, gene, cex=3) {
-  nd <- d %>% 
-    pivot_longer(cols=UT1_Ratio:AO5_Ratio, names_to="colname") %>%
-    select(id, gene_name, colname, value, site_position, fdr) %>% 
-    mutate(sample = str_remove(colname, "_.atio")) %>% 
-    mutate(group = str_remove(sample, "\\d") %>% as_factor() %>% fct_relevel("UT")) %>% 
-    group_by(sample) %>% 
-    mutate(med = median(value, na.rm=TRUE)) %>% 
-    mutate(value_norm = value / med)
-    
-  nd %>%
-    filter(gene_name == gene) %>% 
-    mutate(pos = str_extract(site_position, "^\\d+") %>% as.integer()) %>% 
-    arrange(pos) %>% 
-    mutate(site_position = as_factor(site_position))  %>% 
-  ggplot(aes(x=group, y=log2(value_norm), colour=fdr<0.05)) +
-    theme_bw() +
-    theme(panel.grid = element_blank(), legend.position = "none") +
-    geom_hline(yintercept = 0, colour="grey80") +
-    geom_beeswarm(cex=cex) +
-    facet_wrap(~site_position, nrow=1) +
-    scale_colour_manual(values=c("grey", "black")) +
-    labs(x=NULL, y=expression(log[2]~Ratio))
-}

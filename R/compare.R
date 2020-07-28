@@ -49,19 +49,3 @@ merge_all <- function(prot, mito, ubihub) {
     mutate(change = case_when(fdr < 0.05 & log_fc > 0 ~ "up", fdr < 0.05 & log_fc < 0 ~ "down", TRUE ~ "none") %>% factor(levels=c("none", "down", "up")))
 }
 
-plot_mito_change <- function(d, label.size = 8) {
-  d <- d %>% 
-    filter(in_mito) %>%
-    group_by(gene_name) %>%
-    mutate(site = rank(site_position)) %>%
-    ungroup() %>%
-    mutate(gene_name = as_factor(gene_name) %>% fct_rev) %>% 
-    mutate(log_fc_sig = if_else(fdr < 0.05, log_fc, as.numeric(NA)))
-  ggplot(d, aes(x=site, y=gene_name, fill=log_fc_sig)) +
-    theme_bw() +
-    theme(panel.grid = element_blank(), axis.text = element_text(size = label.size)) +
-    geom_tile(colour="grey") +
-    scale_fill_distiller(type="div", palette="BrBG", limits = c(-1,1)*max(abs(d$log_fc)), na.value="white") +
-    labs(x="Site", y=NULL, fill=expression(log[2]~FC)) +
-    scale_x_continuous(breaks=1:20, expand=expansion(mult = c(0, 0.05)))
-}

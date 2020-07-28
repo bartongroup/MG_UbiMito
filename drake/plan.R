@@ -32,7 +32,7 @@ compare_data <- drake_plan(
 
 make_figures <- drake_plan(
   kgg_in_mito = kgg_mito %>% filter(in_mito) %>% pull(id),
-  fig_kgg_volcano = plotVolcano(prot$kgg, fc="log_fc",  fdr="fdr", p="p_value", sel=kgg_in_mito),
+  fig_kgg_volcano = plot_volcano(prot$kgg, fc="log_fc",  fdr="fdr", p="p_value", sel=kgg_in_mito),
   fig_mito_change = plot_mito_change(all_data)
 )
 
