@@ -15,30 +15,32 @@ biomartGeneDownload <- function(mart) {
 
 
 biomartGOGeneDownload <- function(mart, gene_ids) {
-  getBM(
-    attributes = c("ensembl_gene_id", "go_id"),
+  go <- getBM(
+    attributes = c("ensembl_gene_id", "goslim_goa_accession"),
     filters = "ensembl_gene_id",
     values = gene_ids,
     mart = mart
   ) %>% 
-  dplyr::rename(gene_id = ensembl_gene_id) %>% 
-  dplyr::filter(go_id != "") %>% 
-  tibble::as_tibble()
+    dplyr::rename(gene_id = ensembl_gene_id, term_id = goslim_goa_accession) %>% 
+    dplyr::filter(term_id != "") %>% 
+    tibble::as_tibble()
+  terms <- go$term_id %>% unique()
+  map(terms, function(trm) go[go$term_id == trm, ]$gene_id) %>% 
+    set_names(terms)
 }
 
 
 
 biomartGODescriptions <- function(mart) {
   getBM(attributes = c(
-    "go_id",
-    "name_1006",
-    "namespace_1003"
+    "goslim_goa_accession",
+    "goslim_goa_description"
   ), mart=mart) %>% 
   dplyr::rename(
-    go_name = name_1006,
-    go_domain = namespace_1003
+    term_id = goslim_goa_accession,
+    term_name = goslim_goa_description
   ) %>% 
-  dplyr::filter(go_id != "") %>% 
+  dplyr::filter(term_id != "") %>% 
   tibble::as_tibble()
 }
 
@@ -60,21 +62,8 @@ biomartGetGenes <- function(mart, gene_file) {
   read_tsv(gene_file, col_types=cols())
 }
 
-biomartGetTranscripts <- function(mart, transcript_file) {
-  if(!file.exists(transcript_file)) {
-    biomartTranscriptDownload(mart) %>% write_tsv(transcript_file)
-  }
-  read_tsv(transcript_file, col_types=cols())
-}
 
-biomartGetLengths <- function(mart, gene_length_file, gene_ids) {
-  if(!file.exists(gene_length_file)) {
-    biomartGeneLength(mart, gene_ids) %>% write_tsv(gene_length_file)
-  }
-  read_tsv(gene_length_file, col_types=cols())
-}
-
-# GO terms - returns a list with gene2term and terms.
+# GO terms - returns a list with term2gene and terms.
 
 biomartGetGODir <- function(mart, dir, gene_ids) {
   gene2go_file <- file.path(dir, "gene2go.txt")
@@ -85,28 +74,19 @@ biomartGetGODir <- function(mart, dir, gene_ids) {
   if(!file.exists(goterms_file)) {
     biomartGODescriptions(mart) %>% write_tsv(goterms_file)
   }
-  gene2go <- read_tsv(gene2go_file, col_types=cols()) %>% rename(term_id = go_id)
-  goterms <- read_tsv(goterms_file, col_types=cols()) %>% rename(term_id = go_id, term_name = go_name)
+  gene2go <- read_tsv(gene2go_file, col_types=cols()) 
+  goterms <- read_tsv(goterms_file, col_types=cols())
   list(
-    gene2term = gene2go,
+    term2gene = gene2go,
     terms = goterms
   )
 }
 
 biomartGetGeneGO <- function(mart, gene_ids) {
-  gene2go <- biomartGOGeneDownload(mart, gene_ids) %>% rename(term_id = go_id)
-  goterms <- biomartGODescriptions(mart) %>% rename(term_id = go_id, term_name = go_name)
+  gene2go <- biomartGOGeneDownload(mart, gene_ids) 
+  goterms <- biomartGODescriptions(mart)
   list(
-    gene2term = gene2go,
-    terms = goterms
-  )
-}
-
-biomartGetTranscriptGO <- function(mart, transcript_ids) {
-  gene2go <- biomartGOTranscriptDownload(mart, transcript_ids) %>% rename(term_id = go_id)
-  goterms <- biomartGODescriptions(mart) %>% rename(term_id = go_id, term_name = go_name)
-  list(
-    gene2term = gene2go,
+    term2gene = gene2go,
     terms = goterms
   )
 }
@@ -122,7 +102,7 @@ reactomeGetDir <- function(dir, gene_ids) {
   gene2reactome <- read_tsv(gene2reactome_file, col_types=cols()) %>% rename(term_id = reactome_id)
   reactometerms <- read_tsv(reactometerms_file, col_types=cols()) %>% rename(term_id = reactome_id, term_name = name)
   list(
-    gene2term = gene2reactome,
+    term2gene = gene2reactome,
     terms = reactometerms
   )
   
@@ -130,13 +110,16 @@ reactomeGetDir <- function(dir, gene_ids) {
 
 reactomeGet <- function(gene_ids) {
   r <- loadReactome() %>% filter(gene_id %in% gene_ids)
-  gene2reactome <- select(r, gene_id, reactome_id) %>%
+  g2r <- select(r, gene_id, reactome_id) %>%
     rename(term_id = reactome_id)
   reactometerms <- select(r, reactome_id, name) %>%
     rename(term_id = reactome_id, term_name = name) %>% 
     distinct()
+  terms <- g2r$term_id %>% unique()
+  gene2reactome <- map(terms, function(trm) g2r[g2r$term_id == trm, ]$gene_id) %>% 
+    set_names(terms)
   list(
-    gene2term = gene2reactome,
+    term2gene = gene2reactome,
     terms = reactometerms
   )
 }

@@ -12,15 +12,7 @@ functionalEnrichment <- function(genes_all, genes_sel, term_data, gene2name = NU
   
   gene2term <- term_data$gene2term
   term_info <- term_data$terms
-  
-  # select only terms represented in our gene set
-  gene2term <- gene2term %>% filter(gene_id %in% genes_all)
-  
-  # all terms present in the selection
-  terms <- gene2term %>% 
-    filter(gene_id %in% genes_sel) %>% 
-    pull(term_id) %>% 
-    unique()
+  terms <- names(gene2term)
   
   # number of selected genes
   Nsel <- length(genes_sel)
