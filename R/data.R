@@ -66,3 +66,13 @@ save_table <- function(dat, file) {
   file <- file.path("tab", file)
   write_tsv(dat, file)
 }
+
+
+shiny_data_all <- function(all_data, bm_go, reactome) {
+  gene2name <- set_names(all_data$gene_name, all_data$gene_id) 
+  list(
+    kgg = all_data %>% mutate(sig = fdr < 0.05),
+    bm_go = bm_go,
+    reactome = reactome
+  )
+}

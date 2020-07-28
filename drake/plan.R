@@ -1,3 +1,11 @@
+get_biomart <- drake_plan(
+  mart = useEnsembl(biomart="ensembl", dataset="mmusculus_gene_ensembl", version="100"),
+  bm_genes = biomartGeneDownload(mart) %>% mutate(gene_name = toupper(gene_name)),
+  bm_go = biomartGetGeneGO(mart, all_data$gene_id),
+  reactome = reactomeGet(all_data$gene_id)
+)
+
+
 get_data <- drake_plan(
   mito = read_mitocarta("data/Human.MitoCarta2.0.xls"),
   prot_raw = read_proteomics("data/Mouse Cortical Neurons Proteomics (Protein, Kgg, Phos) - March 2018.xlsx"),
@@ -27,7 +35,7 @@ get_numbers <- drake_plan(
 compare_data <- drake_plan(
   kgg_mito = merge_prot_mito(prot$kgg_basal, mito, ubihub, "site_position"),
   tot_mito = merge_prot_mito(prot$total, mito, ubihub),
-  all_data = merge_all(prot, mito, ubihub)
+  all_data = merge_all(prot, mito, ubihub, bm_genes)
 )
 
 make_figures <- drake_plan(
@@ -41,4 +49,9 @@ save_tables <- drake_plan(
   save_total_de = save_table(prot$total, "total_de.tsv"),
   save_kgg_mito = save_table(kgg_mito, "kgg_mito.tsv"),
   save_total_mito = save_table(tot_mito, "total_mito.tsv")
+)
+
+save_for_shiny <- drake_plan(
+  shiny_all = shiny_data_all(all_data, bm_go, reactome),
+  save_shiny_all = saveRDS(shiny_all, file_out("shiny_all/data.rds")),
 )
