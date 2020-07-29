@@ -1,10 +1,10 @@
 get_biomart <- drake_plan(
   mart = useEnsembl(biomart="ensembl", dataset="mmusculus_gene_ensembl", version="100"),
-  bm_genes = biomartGeneDownload(mart) %>% mutate(gene_name = toupper(gene_name)),
-  bm_go = biomartGetGeneGO(mart, all_data$gene_id),
-  reactome = reactomeGet(all_data$gene_id)
+  bm_genes = bm_fetch_genes_cached(mart, "cache/genes.rds") %>% mutate(gene_name = toupper(gene_name)),
+  bm_go = bm_fetch_go_cached(mart, all_data$gene_id, "cache/go_terms.rds"),
+  bm_go_slim = bm_fetch_go_cached(mart, all_data$gene_id, "cache/go_terms_slim.rds", slim=TRUE),
+  reactome = fetch_reactome_cached(all_data$gene_id, "cache/rectome.rds")
 )
-
 
 get_data <- drake_plan(
   mito = read_mitocarta("data/Human.MitoCarta2.0.xls"),
@@ -52,6 +52,6 @@ save_tables <- drake_plan(
 )
 
 save_for_shiny <- drake_plan(
-  shiny_all = shiny_data_all(all_data, bm_go, reactome),
+  shiny_all = shiny_data_all(all_data, bm_go, bm_go_slim, reactome),
   save_shiny_all = saveRDS(shiny_all, file_out("shiny_all/data.rds")),
 )

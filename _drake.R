@@ -8,7 +8,7 @@ sd_ <- sapply(files_drake, source)
 
 select <- dplyr::select
 
-for(d in c("data", "shiny_all")) {
+for(d in c("data", "shiny_all", "cache")) {
   if(!dir.exists(d)) dir.create(d)
 }
 

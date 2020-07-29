@@ -68,11 +68,14 @@ save_table <- function(dat, file) {
 }
 
 
-shiny_data_all <- function(all_data, bm_go, reactome) {
+shiny_data_all <- function(all_data, bm_go, bm_go_slim, reactome) {
   gene2name <- set_names(all_data$gene_name, all_data$gene_id)
+  bm_go$terms <- bm_go$terms %>% select(-term_description)
+  bm_go_slim$terms <- bm_go_slim$terms %>% select(-term_description)
   list(
     kgg = all_data %>% mutate(sig = fdr < 0.05),
     bm_go = bm_go,
+    bm_go_slim = bm_go_slim,
     reactome = reactome,
     gene2name = gene2name
   )
