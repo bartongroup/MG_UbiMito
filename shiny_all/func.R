@@ -50,7 +50,7 @@ functionalEnrichment <- function(genes_all, genes_sel, term_data, gene2name = NU
       ft <- fisher.test(fish, alternative = "greater")
       p <- as.numeric(ft$p.value)
     
-      if(!is.null(gene2name)) tgenes_sel <- unname(gene2name[tgenes_sel])
+      if(!is.null(gene2name)) tgenes_sel <- sort(unname(gene2name[tgenes_sel]))
     
       g <- bind_cols(
         info,

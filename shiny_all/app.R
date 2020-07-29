@@ -4,6 +4,7 @@ lib <- "/cluster/gjb_lab/mgierlinski/R_shiny/library/3.6"
 if(dir.exists(lib)) .libPaths(lib)
 
 library(shiny)
+library(DT)
 library(tidyverse)
 source("func.R")
 
@@ -14,12 +15,15 @@ all_genes <- dat$kgg$gene_id %>% unique()
 
 ui <- shinyUI(fluidPage(
   titlePanel("Mitochondrial ubiquitin landscape in neurons"),
+  p("This app allows for quick selection of proteins from the diGly experiment. For each selection of proteins/genes the two tables at the bottom show GO-term and Reactome pathway enrichment. tot is the total number of proteins with this term/pathway, sel - number in selection, expect - expected count in selection based on random distribution, enrich - enrichment over random background (observed / expected)."),
   sidebarLayout(
     sidebarPanel(
       radioButtons("show", "Show", choices=c("UB sites", "Proteins"), inline = TRUE),
       checkboxGroupInput("checks", "Select", choices=c("In MitoCarta" = "in_mito", "In total proteome" = "in_total", "Significant DE" = "sig"), selected=c("in_mito")),
       sliderInput("up_fc", "Upregulated FC limit", min=0, max=5, value=0, step=0.01),
-      sliderInput("down_fc", "Downregulated FC limit", min=0, max=5, value=0, step=0.01)
+      sliderInput("down_fc", "Downregulated FC limit", min=0, max=5, value=0, step=0.01),
+      radioButtons("go_selection", "GO database", choices=c("Full", "Slim"), inline=TRUE),
+      width = 3
     ),
     mainPanel(
       fluidRow(
@@ -47,7 +51,8 @@ server <- shinyServer(function(input, output, session) {
       show = input$show,
       checks = input$checks,
       up_fc = input$up_fc,
-      down_fc = input$down_fc
+      down_fc = input$down_fc,
+      go = input$go_selection
     )
   })
   
@@ -68,10 +73,12 @@ server <- shinyServer(function(input, output, session) {
     tab
   }
   
+  datatable_class <- "compact row-border hover"
+  
   output$gene_table <- DT::renderDataTable({
     tab <- getData() %>% select(-gene_id)
     tab %>% 
-      DT::datatable(class = 'cell-border strip hover', caption="Selected genes") %>% 
+      DT::datatable(class = datatable_class, caption="Selected genes") %>% 
       DT::formatStyle(colnames(tab), fontSize = '80%') %>% 
       DT::formatSignif(c("log_fc", "fdr"), digits=2)
   })
@@ -85,12 +92,17 @@ server <- shinyServer(function(input, output, session) {
       fe <- functionalEnrichment(all_genes, sel, terms, dat$gene2name) %>% select(-P)
     }
     fe %>% 
-      DT::datatable(class = 'cell-border strip hover', caption=cap) %>% 
+      DT::datatable(class = datatable_class, caption=cap) %>% 
       DT::formatStyle(colnames(fe), fontSize = '80%')
   }
   
   output$go_enrichment <- DT::renderDataTable({
-    enrichmentTable(dat$bm_go, "GO term enrichment")
+    vals <- inputValues()
+    if(vals$go == "Full") {
+      enrichmentTable(dat$bm_go, "GO term enrichment (full)")
+    } else {
+      enrichmentTable(dat$bm_go_slim, "GO term enrichment (slim)")
+    }
   })
   
   output$reactome_enrichment <- DT::renderDataTable({
