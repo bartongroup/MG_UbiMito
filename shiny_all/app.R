@@ -19,7 +19,9 @@ ui <- shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
       radioButtons("show", "Show", choices=c("UB sites", "Proteins"), inline = TRUE),
-      checkboxGroupInput("checks", "Select", choices=c("In MitoCarta" = "in_mito", "In total proteome" = "in_total", "Significant DE" = "sig"), selected=c("in_mito")),
+      checkboxGroupInput("checks", "Select", 
+        choices=c("In MitoCarta" = "in_mito", "In total proteome" = "in_total", "Significant DE" = "sig"), selected=c("in_mito")
+      ),
       sliderInput("up_fc", "Upregulated FC limit", min=0, max=5, value=0, step=0.01),
       sliderInput("down_fc", "Downregulated FC limit", min=0, max=5, value=0, step=0.01),
       radioButtons("go_selection", "GO database", choices=c("Full", "Slim"), inline=TRUE),
@@ -63,11 +65,11 @@ server <- shinyServer(function(input, output, session) {
     tab <- dat$kgg %>% 
       filter(!!filter_expr & (log_fc >= vals$up_fc | log_fc <= -vals$down_fc))
     if(vals$show == "UB sites") {
-      tab <- tab %>% select(gene_name, description, site_position, log_fc, fdr, gene_id)
+      tab <- tab %>% select(gene_name, description, site_position, log_fc, fdr, gene_id, ubi)
     } else {
       tab <- tab %>%
         group_by(gene_name, description) %>%
-        summarise(imax = which.max(abs(log_fc)), site_position = site_position[imax], log_fc = log_fc[imax], fdr = fdr[imax], gene_id = gene_id[imax]) %>% 
+        summarise(imax = which.max(abs(log_fc)), site_position = site_position[imax], log_fc = log_fc[imax], fdr = fdr[imax], gene_id = gene_id[imax], ubi = ubi[imax]) %>% 
         select(-imax)
     }
     tab

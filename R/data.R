@@ -73,7 +73,7 @@ shiny_data_all <- function(all_data, bm_go, bm_go_slim, reactome) {
   bm_go$terms <- bm_go$terms %>% select(-term_description)
   bm_go_slim$terms <- bm_go_slim$terms %>% select(-term_description)
   list(
-    kgg = all_data %>% mutate(sig = fdr < 0.05),
+    kgg = all_data %>% mutate(sig = fdr < 0.05, ubi = replace_na(as.character(ubi_part), "-"), e2 = ubi == "E2", e3 = str_detect(ubi, "E3")),
     bm_go = bm_go,
     bm_go_slim = bm_go_slim,
     reactome = reactome,
