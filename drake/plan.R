@@ -9,13 +9,17 @@ get_biomart <- drake_plan(
 get_data <- drake_plan(
   mito = read_mitocarta("data/Human.MitoCarta2.0.xls"),
   prot_raw = read_proteomics("data/Mouse Cortical Neurons Proteomics (Protein, Kgg, Phos) - March 2018.xlsx"),
-  ubihub = read_ubihub()
+  ubihub = read_ubihub(),
+  ineurons = read_ineurons("data/mmc2.xlsx", "Kgg Quant NGN2 (AAVS) - WCL"),
+  pink_raw = read_pink("data/AO3009_3020 - Protein - For Miratul.xlsx", "Proteins_Final")
 )
 
 process_data <- drake_plan(
   prot = prot_raw %>%
     diff_expr() %>% 
-    find_basal()
+    find_basal(),
+  pink = pink_raw %>% 
+    pink_limma_de()
 )
 
 get_numbers <- drake_plan(
@@ -35,7 +39,8 @@ get_numbers <- drake_plan(
 compare_data <- drake_plan(
   kgg_mito = merge_prot_mito(prot$kgg_basal, mito, ubihub, "site_position"),
   tot_mito = merge_prot_mito(prot$total, mito, ubihub),
-  all_data = merge_all(prot, mito, ubihub, bm_genes)
+  all_data = merge_all(prot, mito, ubihub, bm_genes),
+  kgg_ineurons = merge_ineurons_mito(kgg_mito, ineurons)
 )
 
 make_figures <- drake_plan(

@@ -47,6 +47,29 @@ read_proteomics <- function(file) {
   )
 }
 
+read_ineurons <- function(file, sheet) {
+  readxl::read_excel(file, sheet=sheet, skip=1) %>% 
+    select(!starts_with("...")) %>% 
+    mutate(gene_name = toupper(`Gene Symbol`)) %>% 
+    rename(
+      uniprot = `UniProt ID`,
+      site_position = `Site Position`
+    )%>% 
+    unite("id", uniprot, site_position, remove=FALSE)
+}
+
+
+read_pink <- function(file, sheet) {
+  readxl::read_excel(file, sheet=sheet, skip=1) %>% 
+    select(!starts_with("...")) %>% 
+    mutate(gene_name = toupper(`Gene Symbol`)) %>% 
+    rename(
+      uniprot = Accession,
+      description = Description,
+    )%>% 
+    mutate(id = uniprot)
+}
+
 read_names <- function(file, name) {
   read_tsv(file, col_names = "gene_name", col_types = "c") %>% 
     mutate(ubi_part = name)

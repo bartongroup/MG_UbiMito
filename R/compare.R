@@ -51,3 +51,13 @@ merge_all <- function(prot, mito, ubihub, genes) {
     left_join(genes, by="gene_name") 
 }
 
+
+merge_ineurons_mito <- function(kgg, ineu) {
+  ineu_sel <- ineu %>%
+    filter((`Significant WT 6h vs UT` == "+" | `Significant WT 2h vs UT` == "+") & MitoCarta2.0 == "+")
+  kgg_sel <- kgg %>% 
+    filter(fdr < 0.05 & in_mito)
+  
+  full_join(ineu_sel, kgg_sel, by=c("gene_name", "site_position"))
+}
+

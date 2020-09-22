@@ -37,4 +37,39 @@ diff_expr <- function(prot) {
 
 
 
+pink_limma_de <- function(d) {
+  tab <- d %>% 
+    select(id, ends_with("Ratio_(Total)")) %>% 
+    column_to_rownames("id") %>% 
+    as.matrix()
+  fnorm <- apply(tab, 2, median)
+  tab <- t(t(tab) / fnorm)
+  tab <- log2(tab)
+  
+  meta <- tibble(colname = colnames(tab)) %>% 
+    mutate(sample = str_remove(colname, "_Ratio_\\(Total\\)")) %>% 
+    separate(sample, c("genotype", "treatment", "replicate"), remove=FALSE) %>% 
+    mutate(genotype = genotype %>% as_factor() %>% fct_relevel("WT")) %>% 
+    mutate(treatment = treatment %>% as_factor() %>% fct_relevel("UT"))
+    
+
+  design_mat <- model.matrix(~genotype + treatment, data=meta)
+  
+  fit <- tab %>% 
+    lmFit(design_mat) %>% 
+    eBayes()
+  
+  coefs <- colnames(fit$design)[-1]
+  res <- map_dfr(coefs, function(coef) {
+    topTable(fit, coef=coef, adjust="BH", sort.by="none", number=1e9) %>% 
+      as_tibble(rownames = "id") %>% 
+      select(id, log_fc=logFC, p_value=P.Value, fdr=adj.P.Val, ave_ratio=AveExpr) %>% 
+      mutate(contrast = coef)
+  })
+  
+  d %>% 
+    left_join(res, by="id")
+}
+
+
 
