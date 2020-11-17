@@ -40,7 +40,11 @@ There are `r N(readd(kgg_n_sites))` sites on `r N(readd(kgg_n_prot))` individual
 
 ### MitoCarta
 
-We use [MitoCarta 2.0](https://www.broadinstitute.org/files/shared/metabolism/mitocarta/human.mitocarta2.0.html) to identify mitochondrial proteins. This database contains `r N(readd(n_mito))` genes.
+We use [MitoCarta 3.0](https://www.broadinstitute.org/files/shared/metabolism/mitocarta/human.mitocarta3.0.html) to identify mitochondrial proteins. This database contains `r N(readd(n_mito))` genes, located it the following subcompartments:
+
+```{r mito_loc}
+readd(stat_mito) %>% myKable()
+```
 
 ### E2 enzymes and E3 ligases
 
@@ -86,11 +90,19 @@ As we want proteins in basal state, we select only diGly proteins that are detec
 dummy <- DT:::DT2BSClass(c('compact', 'cell-border'))
 ```
 
+This table shows the number of diGly proteins associated with each sub-compartment in MitoCarta:
+
+```{r kgg_sub}
+readd(stat_kgg_mito) %>% 
+  myKable()
+```
+
+Full table with all sites:
 
 ```{r ubi_mito, cache=FALSE}
 kgg_mito %>%
   filter(in_mito) %>% 
-  select(uniprot, gene_name, site_position, description, p_value, fdr, log_fc) %>% 
+  select(uniprot, gene_name, site_position, description, sub_local, p_value, fdr, log_fc) %>% 
   #myKable() %>% 
   #scroll_box(width="100%", height="300px")
   DT::datatable() %>% 

@@ -44,8 +44,7 @@ pink_limma_de <- function(d) {
     as.matrix()
   fnorm <- apply(tab, 2, median)
   tab <- t(t(tab) / fnorm)
-  tab <- log2(tab)
-  
+
   meta <- tibble(colname = colnames(tab)) %>% 
     mutate(sample = str_remove(colname, "_Ratio_\\(Total\\)")) %>% 
     separate(sample, c("genotype", "treatment", "replicate"), remove=FALSE) %>% 

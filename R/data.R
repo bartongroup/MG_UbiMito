@@ -1,6 +1,7 @@
-read_mitocarta <- function(file) {
+read_mitocarta <- function(version) {
+  file <- glue("data/Human.MitoCarta{version}.xls")
   list(
-    carta = readxl::read_excel(file, sheet="A Human MitoCarta2.0"),
+    carta = readxl::read_excel(file, sheet=glue("A Human MitoCarta{version}")),
     ranking = readxl::read_excel(file, sheet="B Human All Genes")
   )
 }

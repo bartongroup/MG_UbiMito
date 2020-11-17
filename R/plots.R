@@ -66,3 +66,29 @@ plot_protein_sites <- function(dat, gene, cex=3) {
     scale_colour_manual(values=c("grey", "black")) +
     labs(x=NULL, y=expression(log[2]~Ratio))
 }
+
+
+plot_sub_dist <- function(dat) {
+  dat %>% 
+    filter(in_mito) %>%
+  ggplot(aes(x=sub_local, y=log_fc)) +
+    theme_bw() +
+    geom_boxplot(outlier.shape = NA) +
+    geom_beeswarm() +
+    labs("Sub-compartment", y=expression(log[2]~FC))
+}
+
+
+plot_stat_mito <- function(st) {
+  st %>%
+    filter(!str_detect(sub_local, "\\|")) %>%
+    mutate(stat = factor(stat, levels = c("mito", "tot", "kgg", "kgg_de"))) %>%
+    mutate(sub_local = factor(sub_local, levels=c("Matrix", "MIM", "MOM", "IMS", "Membrane", "unknown"))) %>% 
+  ggplot(aes(x=sub_local, y=n, fill=stat)) +
+    geom_bar(stat="identity", position=position_dodge2(padding=0), alpha=1, width=0.8, colour="grey30") +
+    theme_bw() +
+    scale_fill_manual(values=cbPalette) +
+    theme(panel.grid = element_blank()) +
+    scale_y_continuous(expand = expansion(mult=c(0,0.05))) +
+    labs(x="Sub-compartment", y="Protein count", fill="Selection")
+}
