@@ -9,6 +9,8 @@ output:
 
 Collaborators: Miratul Muqit
 
+[Interactive data expolorer](https://shiny.compbio.dundee.ac.uk/private//marek_ubimito_all)
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   warning = FALSE,
