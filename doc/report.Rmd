@@ -7,7 +7,7 @@ output:
     css: tabbed_notebook.css
 ---
 
-Collaborators: Miratul Muqit
+Collaborators: Odetta Antico, Miratul Muqit
 
 [Interactive data expolorer](https://shiny.compbio.dundee.ac.uk/private//marek_ubimito_all)
 
