@@ -3,5 +3,7 @@ suppressPackageStartupMessages({
   library(drake)
   library(limma)
   library(glue)
+  library(eulerr)
+  library(ggbeeswarm)
   library(tidyverse)
 })

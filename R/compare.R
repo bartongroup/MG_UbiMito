@@ -26,6 +26,7 @@ merge_prot_mito <- function(dat, mito, ubihub, columns=NULL) {
     select(-MitoCarta2.0_FDR)
 }
 
+
 merge_all <- function(prot, mito, ubihub, genes) {
   prot$kgg %>% 
     left_join(mito$carta, by=c("gene_name" = "Symbol")) %>% 
@@ -53,13 +54,11 @@ merge_all <- function(prot, mito, ubihub, genes) {
 }
 
 
-merge_ineurons_mito <- function(kgg, ineu) {
-  ineu_sel <- ineu %>%
-    filter((`Significant WT 6h vs UT` == "+" | `Significant WT 2h vs UT` == "+") & MitoCarta2.0 == "+")
-  kgg_sel <- kgg %>% 
-    filter(fdr < 0.05 & in_mito)
-  
-  full_join(ineu_sel, kgg_sel, by=c("gene_name", "site_position"))
+merge_ineurons_mito <- function(ineu, mito) {
+  ineu %>% 
+    left_join(mito$carta, by=c("gene_name" = "Symbol")) %>%
+    rename(sub_local = MitoCarta3.0_SubMitoLocalization) %>% 
+    mutate(in_mito = !is.na(sub_local))
 }
 
 

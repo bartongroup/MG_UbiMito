@@ -18,6 +18,7 @@ knitr::opts_chunk$set(
 )
 library(drake)
 library(kableExtra)
+library(eulerr)
 library(tidyverse)
 
 myKable <- function(df, row.names=FALSE, col.names=NA, digits=2, bootstrap="condensed", font.size=12, label=NULL, ...) {
@@ -109,6 +110,11 @@ This figure shows distribution of counts between sub-compartments and four selec
 readd(fig_compartments)
 ```
 
+The next figure shows logFC in each compartment:
+
+```{r fig_comp_fc, fig.width=6, fig.height=4}
+readd(fig_compartment_fc)
+```
 
 Full table with all sites:
 
@@ -158,4 +164,34 @@ The next figure shows how individual sites in each protein change upon stimulati
 
 ```{r mito_change, fig.width=5, fig.height=16}
 readd(fig_mito_change) 
+```
+
+
+## iNeurons
+
+We use iNeurons data from file `mmc2.xlsx` spreadsheet `Kgg Quant NGN2 (AAVS) - WCL`. We select protein sites marked as `Significant WT 6h vs UT` or `Significant WT 2h vs UT`.
+
+For comparison, we use our data with $|\log_2 FC| > 1$ and $FDR < 0.05$. Here is the comparison result:
+
+```{r plot_venn, fig.width=5, fig.height=3}
+loadd(plt_venn)
+plot(plt_venn$plot, quantities=TRUE)
+```
+
+### KGG significant
+
+```{r kgg_sig}
+plt_venn$v$kgg
+```
+
+### iNeurons significant
+
+```{r ineu_dig}
+plt_venn$v$ineurons
+```
+
+### Overlap
+
+```{r ineu_kgg}
+intersect(plt_venn$v$kgg, plt_venn$v$ineurons)
 ```

@@ -92,3 +92,34 @@ plot_stat_mito <- function(st) {
     scale_y_continuous(expand = expansion(mult=c(0,0.05))) +
     labs(x="Sub-compartment", y="Protein count", fill="Selection")
 }
+
+
+plot_mito_fc <- function(dat) {
+  dat %>%
+    filter(in_mito) %>% 
+    mutate(sub_local = factor(sub_local, levels=c("Matrix", "MIM", "MOM", "IMS", "Membrane", "unknown"))) %>% 
+  ggplot(aes(x=sub_local, y=log_fc)) +
+    theme_bw() +
+    geom_boxplot(outlier.shape = NA, colour="grey70") +
+    geom_beeswarm(aes(colour = fdr < 0.05)) +
+    scale_colour_manual(values=c("grey", "black")) +
+    theme(
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.y = element_blank()
+    ) +
+    labs(x="Mitochondrial subcompartments", y=expression(log[2]~(AO/UT)))
+}
+
+
+plot_ineurons_venn = function(kgg, ineu) {
+  kggs <- kgg %>% filter(in_mito & fdr < 0.05 & abs(log_fc) > 1.0) %>% unite(nid, gene_name, site_position) %>% pull(nid) %>% unique()
+  ineus <- ineu %>% filter(in_mito & (`Significant WT 6h vs UT` == "+" | `Significant WT 2h vs UT` == "+")) %>% unite(nid, gene_name, site_position) %>% pull(nid) %>% unique()
+  v <- list(
+    kgg = kggs,
+    ineurons = ineus
+  )
+  list(
+    v = v,
+    plot = euler(v)
+  )
+}

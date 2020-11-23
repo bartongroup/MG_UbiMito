@@ -43,7 +43,7 @@ compare_data <- drake_plan(
   kgg_mito = merge_prot_mito(prot$kgg_basal, mito, ubihub, "site_position"),
   tot_mito = merge_prot_mito(prot$total, mito, ubihub),
   all_data = merge_all(prot, mito, ubihub, bm_genes),
-  kgg_ineurons = merge_ineurons_mito(kgg_mito, ineurons),
+  ineurons_mito = merge_ineurons_mito(ineurons, mito),
   
   stat_mito = make_stat_mito(mito, tot_mito, kgg_mito)
 )
@@ -52,7 +52,10 @@ make_figures <- drake_plan(
   kgg_in_mito = kgg_mito %>% filter(in_mito) %>% pull(id),
   fig_kgg_volcano = plot_volcano(prot$kgg, fc="log_fc",  fdr="fdr", p="p_value", sel=kgg_in_mito),
   fig_mito_change = plot_mito_change(all_data),
-  fig_compartments =  plot_stat_mito(stat_mito)
+  fig_compartments =  plot_stat_mito(stat_mito),
+  fig_compartment_fc = plot_mito_fc(kgg_mito),
+  
+  plt_venn = plot_ineurons_venn(kgg_mito, ineurons_mito)
 )
 
 save_tables <- drake_plan(
