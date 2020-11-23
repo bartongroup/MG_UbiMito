@@ -85,8 +85,6 @@ kgg_de_link <- file.path(public_html, "tab/kgg_de.tsv")
 
 ### Identity of ubiquitylated proteins
 
-Since we do not have sub-compartment data yet (it will come with MitoCarta 3.0), we can only identify which ubiquitilated proteins are in the MitoCarta database. However, these are already identified in the Excel file.
-
 As we want proteins in basal state, we select only diGly proteins that are detected in the total proteome. This gives us `r N(readd(kgg_n_prot_basal))` proteins. Out of these, there are `r N(readd(n_kgg_in_mito))` diGly proteins in MitoCarta database. None of them is E2 or E3.
 
 ```{r datatable_settings, message=FALSE, warning=FALSE}
