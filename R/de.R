@@ -71,4 +71,13 @@ pink_limma_de <- function(d) {
 }
 
 
+mean_expression <- function(dat, root) {
+  dat %>% 
+    select(id, ends_with("Ratio")) %>% 
+    select(id, starts_with(root)) %>% 
+    pivot_longer(-id) %>% 
+    group_by(id) %>% 
+    summarise(M = mean(value, na.rm=TRUE), SD = sd(value, na.rm=TRUE))
+}
+
 

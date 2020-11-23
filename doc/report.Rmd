@@ -93,9 +93,22 @@ dummy <- DT:::DT2BSClass(c('compact', 'cell-border'))
 This table shows the number of diGly proteins associated with each sub-compartment in MitoCarta:
 
 ```{r kgg_sub}
-readd(stat_kgg_mito) %>% 
+readd(counts_kgg_mito) %>% 
   myKable()
 ```
+
+This figure shows distribution of counts between sub-compartments and four selection categories:
+
+ - mito - proteins in MitoCarta
+ - tot - proteins in total proteome
+ - kgg - proteins in diGly selection
+ - kgg_de - differentially expressed (stimulated) diGly proteins
+
+
+```{r fig_comp_mito, fig.width=6, fig.height=4}
+readd(fig_compartments)
+```
+
 
 Full table with all sites:
 

@@ -41,16 +41,15 @@ merge_all <- function(prot, mito, ubihub, genes) {
       fdr,
       log_fc,
       sub_local = MitoCarta3.0_SubMitoLocalization,
-      MitoCarta2.0_FDR,
       numpep,
       ubi_part
     ) %>% 
-    mutate(in_mito = !is.na(MitoCarta2.0_FDR), in_total = !is.na(numpep)) %>% 
-    select(-c(MitoCarta2.0_FDR, numpep)) %>% 
-    mutate(ubi_part = as_factor(ubi_part)) %>% 
+    mutate(in_mito = !is.na(sub_local), in_total = !is.na(numpep)) %>% 
+    select(-c(numpep)) %>% 
     mutate(change = case_when(fdr < 0.05 & log_fc > 0 ~ "up", fdr < 0.05 & log_fc < 0 ~ "down", TRUE ~ "none") %>% factor(levels=c("none", "down", "up"))) %>% 
     select(-description) %>% 
-    left_join(genes, by="gene_name") 
+    left_join(genes, by="gene_name") %>% 
+    mutate_at(c("ubi_part", "sub_local", "gene_biotype"), as_factor)
 }
 
 
@@ -68,10 +67,10 @@ make_stat_mito <- function(mito, tot, kgg) {
   stat_mito <- mito$carta %>%
     rename(sub_local = MitoCarta3.0_SubMitoLocalization) %>% 
     group_by(sub_local) %>% tally() %>% mutate(stat = "mito")
-  stat_kgg <- kgg_mito %>%
+  stat_kgg <- kgg %>%
     filter(in_mito) %>%
     group_by(sub_local) %>% summarise(n = length(unique(uniprot))) %>% mutate(stat = "kgg")
-  stat_kgg_de <- kgg_mito %>%
+  stat_kgg_de <- kgg %>%
     filter(in_mito & fdr < 0.05) %>%
     group_by(sub_local) %>% summarise(n = length(unique(uniprot))) %>% mutate(stat = "kgg_de")
   stat_tot <- tot %>%

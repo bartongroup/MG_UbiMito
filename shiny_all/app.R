@@ -65,11 +65,11 @@ server <- shinyServer(function(input, output, session) {
     tab <- dat$kgg %>% 
       filter(!!filter_expr & (log_fc >= vals$up_fc | log_fc <= -vals$down_fc))
     if(vals$show == "UB sites") {
-      tab <- tab %>% select(gene_name, description, site_position, log_fc, fdr, gene_id, ubi)
+      tab <- tab %>% select(gene_name, description, site_position, log_fc, fdr, gene_id, ubi, sub)
     } else {
       tab <- tab %>%
         group_by(gene_name, description) %>%
-        summarise(imax = which.max(abs(log_fc)), site_position = site_position[imax], log_fc = log_fc[imax], fdr = fdr[imax], gene_id = gene_id[imax], ubi = ubi[imax]) %>% 
+        summarise(imax = which.max(abs(log_fc)), site_position = site_position[imax], log_fc = log_fc[imax], fdr = fdr[imax], gene_id = gene_id[imax], ubi = ubi[imax], sub = sub[imax]) %>% 
         select(-imax)
     }
     tab

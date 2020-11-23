@@ -29,8 +29,8 @@ get_numbers <- drake_plan(
   total_n_prot = nrow(prot$total),
   
   n_mito = nrow(mito$carta),
-  stat_mito = mito$carta %>% group_by(MitoCarta3.0_SubMitoLocalization) %>% tally() %>% arrange(desc(n)),
-  stat_kgg_mito = kgg_mito %>% filter(in_mito) %>% group_by(sub_local) %>% summarise(n = length(unique(uniprot))) %>% arrange(desc(n)),
+  counts_mito = mito$carta %>% group_by(MitoCarta3.0_SubMitoLocalization) %>% tally() %>% arrange(desc(n)),
+  counts_kgg_mito = kgg_mito %>% filter(in_mito) %>% group_by(sub_local) %>% summarise(n = length(unique(uniprot))) %>% arrange(desc(n)),
   
   n_kgg_in_mito = kgg_mito %>% filter(in_mito) %>% pull(uniprot) %>% unique() %>% length(),
   n_kgg_ligase_in_mito = kgg_mito %>% filter(in_mito & !is.na(ubi_part)) %>% pull(uniprot) %>% unique() %>% length(),
@@ -43,13 +43,16 @@ compare_data <- drake_plan(
   kgg_mito = merge_prot_mito(prot$kgg_basal, mito, ubihub, "site_position"),
   tot_mito = merge_prot_mito(prot$total, mito, ubihub),
   all_data = merge_all(prot, mito, ubihub, bm_genes),
-  kgg_ineurons = merge_ineurons_mito(kgg_mito, ineurons)
+  kgg_ineurons = merge_ineurons_mito(kgg_mito, ineurons),
+  
+  stat_mito = make_stat_mito(mito, tot_mito, kgg_mito)
 )
 
 make_figures <- drake_plan(
   kgg_in_mito = kgg_mito %>% filter(in_mito) %>% pull(id),
   fig_kgg_volcano = plot_volcano(prot$kgg, fc="log_fc",  fdr="fdr", p="p_value", sel=kgg_in_mito),
-  fig_mito_change = plot_mito_change(all_data)
+  fig_mito_change = plot_mito_change(all_data),
+  fig_compartments =  plot_stat_mito(stat_mito)
 )
 
 save_tables <- drake_plan(
