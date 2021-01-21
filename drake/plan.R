@@ -58,6 +58,13 @@ make_figures <- drake_plan(
   plt_venn = plot_ineurons_venn(kgg_mito, ineurons_mito)
 )
 
+manuscript_figures <- drake_plan(
+  save_fig_kgg_volcano = ggsave("fig/kgg_volcano.pdf", plot=fig_kgg_volcano, device="pdf", width=5, height=4),
+  save_fig_mito_change = ggsave("fig/mito_change.pdf", plot=fig_mito_change, device="pdf", width=4, height=16),
+  save_fig_compartments = ggsave("fig/compartments.pdf", plot=fig_compartments, device="pdf", width=6, height=4),
+  save_fig_compartment_fc = ggsave("fig/subcompartments_fc.pdf", plot=fig_compartment_fc, device="pdf", width=6, height=4)
+)
+
 save_tables <- drake_plan(
   save_kgg_de = save_table(prot$kgg, "kgg_de.tsv"),
   save_total_de = save_table(prot$total, "total_de.tsv"),

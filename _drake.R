@@ -8,7 +8,7 @@ sd_ <- sapply(files_drake, source)
 
 select <- dplyr::select
 
-for(d in c("data", "shiny_all", "cache")) {
+for(d in c("data", "shiny_all", "cache", "fig")) {
   if(!dir.exists(d)) dir.create(d)
 }
 
@@ -23,6 +23,7 @@ plan <- bind_rows(
   get_numbers,
   compare_data,
   make_figures,
+  manuscript_figures,
   save_tables,
   save_for_shiny,
   sesinfo
