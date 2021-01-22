@@ -6,6 +6,20 @@ read_mitocarta <- function(version) {
   )
 }
 
+separate_mitocarta_genes <- function(mc) {
+  mc %>% 
+    unite(genes, c(Symbol, Synonyms), sep="|") %>%
+    separate_rows(genes, sep = "\\|") %>% 
+    filter(genes != "-") %>% 
+    # remove duplicates, select highest score
+    group_split(genes) %>% 
+    map_dfr(function(w) {
+      w %>% 
+        arrange(desc(MitoCarta2.0_Score)) %>% 
+        head(1)
+    })
+}
+
 read_proteomics <- function(file) {
   list(
     total = readxl::read_excel(file, sheet="Total Protein (Normalized)") %>% 

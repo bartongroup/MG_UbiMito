@@ -7,7 +7,7 @@ find_basal <- function(prot) {
 
 merge_prot_mito <- function(dat, mito, ubihub, columns=NULL) {
   dat %>% 
-    left_join(mito$carta, by=c("gene_name" = "Symbol")) %>% 
+    left_join(mito, by=c("gene_name" = "genes")) %>% 
     left_join(ubihub, by="gene_name") %>% 
     select(
       id,
@@ -29,7 +29,7 @@ merge_prot_mito <- function(dat, mito, ubihub, columns=NULL) {
 
 merge_all <- function(prot, mito, ubihub, genes) {
   prot$kgg %>% 
-    left_join(mito$carta, by=c("gene_name" = "Symbol")) %>% 
+    left_join(mito, by=c("gene_name" = "genes")) %>% 
     left_join(ubihub, by="gene_name") %>% 
     left_join(prot$total %>% select(uniprot, numpep = `Number of Peptides Quantified`), by="uniprot") %>% 
     select(
@@ -56,7 +56,7 @@ merge_all <- function(prot, mito, ubihub, genes) {
 
 merge_ineurons_mito <- function(ineu, mito) {
   ineu %>% 
-    left_join(mito$carta, by=c("gene_name" = "Symbol")) %>%
+    left_join(mito, by=c("gene_name" = "genes")) %>%
     rename(sub_local = MitoCarta3.0_SubMitoLocalization) %>% 
     mutate(in_mito = !is.na(sub_local))
 }

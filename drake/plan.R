@@ -7,7 +7,7 @@ get_biomart <- drake_plan(
 )
 
 get_data <- drake_plan(
-  mito = read_mitocarta("3.0"),
+  mito_raw = read_mitocarta("3.0"),
   prot_raw = read_proteomics("data/Mouse Cortical Neurons Proteomics (Protein, Kgg, Phos) - March 2018.xlsx"),
   ubihub = read_ubihub(),
   ineurons = read_ineurons("data/mmc2.xlsx", "Kgg Quant NGN2 (AAVS) - WCL"),
@@ -15,6 +15,7 @@ get_data <- drake_plan(
 )
 
 process_data <- drake_plan(
+  mito = separate_mitocarta_genes(mito_raw$carta),
   prot = prot_raw %>%
     diff_expr() %>% 
     find_basal(),
@@ -28,8 +29,8 @@ get_numbers <- drake_plan(
   kgg_n_sites = nrow(prot$kgg),
   total_n_prot = nrow(prot$total),
   
-  n_mito = nrow(mito$carta),
-  counts_mito = mito$carta %>% group_by(MitoCarta3.0_SubMitoLocalization) %>% tally() %>% arrange(desc(n)),
+  n_mito = nrow(mito_raw$carta),
+  counts_mito = mito_raw$carta %>% group_by(MitoCarta3.0_SubMitoLocalization) %>% tally() %>% arrange(desc(n)),
   counts_kgg_mito = kgg_mito %>% filter(in_mito) %>% group_by(sub_local) %>% summarise(n = length(unique(uniprot))) %>% arrange(desc(n)),
   
   n_kgg_in_mito = kgg_mito %>% filter(in_mito) %>% pull(uniprot) %>% unique() %>% length(),
@@ -45,7 +46,7 @@ compare_data <- drake_plan(
   all_data = merge_all(prot, mito, ubihub, bm_genes),
   ineurons_mito = merge_ineurons_mito(ineurons, mito),
   
-  stat_mito = make_stat_mito(mito, tot_mito, kgg_mito)
+  stat_mito = make_stat_mito(mito_raw, tot_mito, kgg_mito)
 )
 
 make_figures <- drake_plan(
