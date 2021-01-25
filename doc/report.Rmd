@@ -182,23 +182,23 @@ For comparison, we use our data with $|\log_2 FC| > 1$ and $FDR < 0.05$. Only pr
 
 ```{r plot_venn, fig.width=5, fig.height=3}
 loadd(plt_venn)
-plot(plt_venn$plot, quantities=TRUE)
+plot(plt_venn$plot, quantities=TRUE) 
 ```
 
-### KGG significant
+### Only in KGG significant
 
 ```{r kgg_sig}
-plt_venn$v$kgg
+plt_venn$v$kgg 
 ```
 
-### iNeurons significant
+### Only in iNeurons significant
 
 ```{r ineu_dig}
-plt_venn$v$ineurons
-```
+plt_venn$v$ineurons 
+``` 
 
 ### Overlap
 
 ```{r ineu_kgg}
-intersect(plt_venn$v$kgg, plt_venn$v$ineurons)
+intersect(plt_venn$v$kgg, plt_venn$v$ineurons) 
 ```
