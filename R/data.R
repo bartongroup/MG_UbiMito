@@ -37,6 +37,10 @@ read_proteomics <- function(file) {
     kgg = readxl::read_excel(file, sheet="Kgg Proteomic (Normalized)") %>% 
       select(!starts_with("...")) %>% 
       mutate(gene_name = toupper(`Gene symbol`)) %>% 
+      rename_at(
+        vars(contains("_Ratio")),
+        ~str_replace(.x, "_Ratio", "_ratio")
+      ) %>% 
       rename(
         uniprot = `UniProt ID`,
         site_position = `Site Position`,
@@ -60,6 +64,25 @@ read_proteomics <- function(file) {
       mutate(welch_p_value = 10^(-welch_p_value)) %>% 
       unite("id", uniprot, site_position, remove=FALSE)
   )
+}
+
+
+normalise_prot <- function(prt) {
+  prt_tot <- prt$tot %>% 
+    pivot_longer(cols=UT1_ratio:AO5_ratio, names_to="colname") %>%
+    select(uniprot, colname, tot=value)
+  prt_kgg <- prt$kgg %>% 
+    pivot_longer(cols=UT1_ratio:AO5_ratio, names_to="colname") %>%
+    select(id, uniprot, colname, kgg=value) %>% 
+    left_join(prt_tot, by=c("uniprot", "colname")) %>% 
+    drop_na() %>% 
+    mutate(rat = kgg / tot) %>% 
+    pivot_wider(id_cols = id, names_from=colname, values_from=rat)
+  kgg_norm <- prt$kgg %>% 
+    select(-(UT1_ratio:AO5_ratio)) %>% 
+    right_join(prt_kgg, by="id")
+  prt$kgg_norm <- kgg_norm
+  prt
 }
 
 read_ineurons <- function(file, sheet) {

@@ -32,22 +32,121 @@ plot_mito_change <- function(dat, label.size = 8) {
     ungroup() %>%
     mutate(gene_name = as_factor(gene_name) %>% fct_rev) %>% 
     mutate(log_fc_sig = if_else(fdr < 0.05, log_fc, as.numeric(NA)))
-  ggplot(d, aes(x=site, y=gene_name, fill=log_fc_sig)) +
+  d_tot <- d %>% 
+    select(gene_name, tot_log_fc) %>% 
+    distinct() %>% 
+    arrange(tot_log_fc)
+  genes <- d_tot$gene_name
+  
+  d <- d %>% mutate(gene_name = factor(gene_name, levels = genes))
+  d_tot <- d_tot %>% mutate(gene_name = factor(gene_name, levels = genes))
+  
+  lims <- c(-1,1)*max(abs(d$log_fc))
+  lims_tot <- c(-1,1)*max(abs(d_tot$tot_log_fc))
+  
+  g1 <- ggplot(d_tot, aes(x="Total", y=gene_name, fill=tot_log_fc)) +
     theme_bw() +
-    theme(panel.grid = element_blank(), axis.text = element_text(size = label.size)) +
+    theme(
+      panel.grid = element_blank(),
+      axis.text = element_text(size = label.size),
+      axis.text.y = element_blank(),
+      plot.margin = margin(unit(c(5.5, 0, 5.5, 5.5), "pt")),
+      legend.position = "left"
+    ) +
+    scale_y_discrete(position="right") +
+    geom_tile(colour="grey") +
+    scale_fill_distiller(type="div", palette="RdBu", limits = lims_tot, na.value="white") +
+    labs(x=NULL, y=NULL, fill=expression(log[2]~FC[tot]))
+  
+  g2 <- ggplot(d, aes(x=site, y=gene_name, fill=log_fc_sig)) +
+    theme_bw() +
+    theme(
+      panel.grid = element_blank(),
+      axis.text = element_text(size = label.size),
+      axis.text.y = element_text(hjust=0.5)
+    ) +
     geom_tile(colour="grey") +
     scale_fill_distiller(type="div", palette="BrBG", limits = c(-1,1)*max(abs(d$log_fc)), na.value="white") +
     labs(x="Site", y=NULL, fill=expression(log[2]~FC)) +
     scale_x_continuous(breaks=1:20, expand=expansion(mult = c(0, 0.05)))
+  plot_grid(g1, g2, align="h", rel_widths = c(1,3))
 }
 
+plot_mito_change_sep <- function(dat, label.size = 3, site.size=2.5, ncol=10) {
+  d <- dat %>% 
+    filter(in_mito) %>%
+    group_by(gene_name) %>%
+    mutate(pos = str_extract(site_position, "^\\d+") %>% as.integer()) %>% 
+    ungroup()
+   
+  
+  genes <- d$gene_name %>% unique() %>% sort()
+  mx <- max(abs(d$log_fc))
+  
+  P <- map(genes, function(gene) {
+    ds <- d %>%
+      filter(gene_name == gene) %>% 
+      select(site_position, log_fc, change, pos) %>% 
+      distinct() %>% 
+      arrange(pos) %>% 
+      mutate(idx = row_number())
+    ns <- nrow(ds)
+    
+    dp <- tibble(x=c(0.5,ns+0.5,ns+0.5,0.5, 0.5), y=c(0,0,-1,-1, 0))
+
+          
+    ggplot(ds, aes(x=idx, y=abs(log_fc))) +
+      theme_nothing() +
+      theme(
+        #axis.text.x = element_text(size=label.size, angle=90, hjust=1),
+        plot.margin = margin(unit(c(5, 2, 1, 2), "pt"))
+      ) +
+      geom_polygon(data=dp, aes(x,y), fill="grey80") +
+      geom_segment(aes(xend=idx, yend=0), colour="grey80") +
+      geom_point(aes(colour=change), size=1.3) +
+      #geom_hline(yintercept = 0) +
+      #geom_hline(yintercept = -1) +
+      scale_x_continuous(limits=c(0.5, ns+0.5), expand=c(0,0)) + 
+      scale_y_continuous(limits=c(-1, mx*1.05)) +
+      scale_colour_manual(values=c("grey", "blue", "red"), drop=FALSE) +
+      annotate("text", label=gene, x=(ns+1)/2, y=-0.5, hjust=0.5, size=label.size) +
+      geom_text(aes(label=site_position), angle=90, hjust=0, nudge_y = mx/20, size=site.size)
+  })
+  
+  plot_grid(plotlist=P, ncol=ncol)
+ 
+}
+
+plot_protein <- function(dat, gene, cex=3) {
+  nd <- dat %>% 
+    pivot_longer(cols=UT1_ratio:AO5_ratio, names_to="colname") %>%
+    select(id, gene_name, colname, value, fdr) %>% 
+    mutate(sample = str_remove(colname, "_ratio")) %>% 
+    separate(sample, c("group", "replicate"), 2, remove=FALSE) %>% 
+    group_by(sample) %>% 
+    mutate(med = median(value, na.rm=TRUE)) %>% 
+    mutate(value_norm = value / med)
+  
+  nd %>%
+    filter(gene_name == gene) %>% 
+  ggplot(aes(x=group, y=log2(value_norm), shape=fdr<0.05, colour=replicate)) +
+    theme_bw() +
+    theme(panel.grid = element_blank(), legend.position = "none") +
+    geom_hline(yintercept = 0, colour="grey80") +
+    geom_beeswarm(cex=cex) +
+    scale_colour_manual(values=cbPalette) +
+    scale_shape_manual(values=c(1, 19)) +
+    labs(x=NULL, y=expression(log[2]~Ratio))
+  
+}
 
 plot_protein_sites <- function(dat, gene, cex=3) {
   nd <- dat %>% 
-    pivot_longer(cols=UT1_Ratio:AO5_Ratio, names_to="colname") %>%
+    pivot_longer(cols=UT1_ratio:AO5_ratio, names_to="colname") %>%
     select(id, gene_name, colname, value, site_position, fdr) %>% 
-    mutate(sample = str_remove(colname, "_.atio")) %>% 
-    mutate(group = str_remove(sample, "\\d") %>% as_factor() %>% fct_relevel("UT")) %>% 
+    mutate(sample = str_remove(colname, "_ratio")) %>% 
+    separate(sample, c("group", "replicate"), 2, remove=FALSE) %>% 
+    mutate(group = as_factor(group) %>% fct_relevel("UT")) %>% 
     group_by(sample) %>% 
     mutate(med = median(value, na.rm=TRUE)) %>% 
     mutate(value_norm = value / med)
@@ -57,15 +156,17 @@ plot_protein_sites <- function(dat, gene, cex=3) {
     mutate(pos = str_extract(site_position, "^\\d+") %>% as.integer()) %>% 
     arrange(pos) %>% 
     mutate(site_position = as_factor(site_position))  %>% 
-    ggplot(aes(x=group, y=log2(value_norm), colour=fdr<0.05)) +
+  ggplot(aes(x=group, y=log2(value_norm), shape=fdr<0.05, colour=replicate)) +
     theme_bw() +
     theme(panel.grid = element_blank(), legend.position = "none") +
     geom_hline(yintercept = 0, colour="grey80") +
     geom_beeswarm(cex=cex) +
     facet_wrap(~site_position, nrow=1) +
-    scale_colour_manual(values=c("grey", "black")) +
+    scale_colour_manual(values=cbPalette) +
+    scale_shape_manual(values=c(1, 19)) +
     labs(x=NULL, y=expression(log[2]~Ratio))
 }
+
 
 
 plot_sub_dist <- function(dat) {

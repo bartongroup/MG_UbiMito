@@ -39,6 +39,8 @@ Data came from quantitative diGlycine (diGly) capture proteomics to identify Par
 
 There are `r N(readd(kgg_n_sites))` sites on `r N(readd(kgg_n_prot))` individual proteins in the diGly data. There are `r N(readd(total_n_prot))` proteins in the total proteome data.
 
+kGG data were normalised to the total proteome, sample-to-sample. That is, UT1_ratio from kGG was divided by UT1_ratio from total proteome and so on, for all samples. kGG proteins not present in the total proteome were rejected.
+
 ## Databases
 
 ### MitoCarta
@@ -85,7 +87,7 @@ kgg_de_link <- file.path(public_html, "tab/kgg_de.tsv")
 
 ### Identity of ubiquitylated proteins
 
-As we want proteins in basal state, we select only diGly proteins that are detected in the total proteome. This gives us `r N(readd(kgg_n_prot_basal))` proteins. Out of these, there are `r N(readd(n_kgg_in_mito))` diGly proteins in MitoCarta database. None of them is E2 or E3.
+We have `r N(readd(kgg_n_prot_basal))` proteins. Out of these, there are `r N(readd(n_kgg_in_mito))` diGly proteins in MitoCarta database. None of them is E2 or E3.
 
 ```{r datatable_settings, message=FALSE, warning=FALSE}
 dummy <- DT:::DT2BSClass(c('compact', 'cell-border'))
@@ -166,6 +168,11 @@ The next figure shows how individual sites in each protein change upon stimulati
 readd(fig_mito_change) 
 ```
 
+The next figure is a different visualisation of the same data. For each protein (present in MitoCarta) all sites are shown. The length of the line for each site is proportional to $|\log_2 FC|$ between UT and AO. The colour of the point indicates: red - significant positive fold change, blue - significant negative fold change, grey - non-significant change.
+
+```{r mito_change_sep, fig.width=10, fig.height=20}
+readd(fig_mito_change_sep)
+```
 
 ## iNeurons
 

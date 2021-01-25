@@ -28,10 +28,13 @@ merge_prot_mito <- function(dat, mito, ubihub, columns=NULL) {
 
 
 merge_all <- function(prot, mito, ubihub, genes) {
-  prot$kgg %>% 
+  prot$kgg_norm %>% 
     left_join(mito, by=c("gene_name" = "genes")) %>% 
     left_join(ubihub, by="gene_name") %>% 
-    left_join(prot$total %>% select(uniprot, numpep = `Number of Peptides Quantified`), by="uniprot") %>% 
+    left_join(prot$total %>%
+        select(uniprot, numpep=`Number of Peptides Quantified`, tot_log_fc=log_fc, tot_fdr=fdr),
+        by="uniprot"
+    ) %>% 
     select(
       id,
       uniprot,
@@ -41,6 +44,8 @@ merge_all <- function(prot, mito, ubihub, genes) {
       p_value,
       fdr,
       log_fc,
+      tot_log_fc,
+      tot_fdr,
       sub_local = MitoCarta3.0_SubMitoLocalization,
       numpep,
       ubi_part

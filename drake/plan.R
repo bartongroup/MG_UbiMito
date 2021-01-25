@@ -17,6 +17,7 @@ get_data <- drake_plan(
 process_data <- drake_plan(
   mito = separate_mitocarta_genes(mito_raw$carta),
   prot = prot_raw %>%
+    normalise_prot() %>% 
     diff_expr() %>% 
     find_basal(),
   pink = pink_raw %>% 
@@ -27,6 +28,7 @@ get_numbers <- drake_plan(
   kgg_n_prot = prot$kgg$uniprot %>% unique() %>% length(),
   kgg_n_prot_basal = prot$kgg_basal$uniprot %>% unique() %>% length(),
   kgg_n_sites = nrow(prot$kgg),
+  kgg_norm_n_sites = nrow(prot$kgg_norm),
   total_n_prot = nrow(prot$total),
   
   n_mito = nrow(mito_raw$carta),
@@ -41,7 +43,8 @@ get_numbers <- drake_plan(
 )
 
 compare_data <- drake_plan(
-  kgg_mito = merge_prot_mito(prot$kgg_basal, mito, ubihub, "site_position"),
+  kgg_mito_u = merge_prot_mito(prot$kgg_basal, mito, ubihub, "site_position"),
+  kgg_mito = merge_prot_mito(prot$kgg_norm, mito, ubihub, "site_position"),
   tot_mito = merge_prot_mito(prot$total, mito, ubihub),
   all_data = merge_all(prot, mito, ubihub, bm_genes),
   ineurons_mito = merge_ineurons_mito(ineurons, mito),
@@ -51,8 +54,9 @@ compare_data <- drake_plan(
 
 make_figures <- drake_plan(
   kgg_in_mito = kgg_mito %>% filter(in_mito) %>% pull(id),
-  fig_kgg_volcano = plot_volcano(prot$kgg, fc="log_fc",  fdr="fdr", p="p_value", sel=kgg_in_mito),
+  fig_kgg_volcano = plot_volcano(prot$kgg_norm, fc="log_fc",  fdr="fdr", p="p_value", sel=kgg_in_mito),
   fig_mito_change = plot_mito_change(all_data),
+  fig_mito_change_sep = plot_mito_change_sep(all_data),
   fig_compartments =  plot_stat_mito(stat_mito),
   fig_compartment_fc = plot_mito_fc(kgg_mito),
   
@@ -62,12 +66,13 @@ make_figures <- drake_plan(
 manuscript_figures <- drake_plan(
   save_fig_kgg_volcano = ggsave("fig/kgg_volcano.pdf", plot=fig_kgg_volcano, device="pdf", width=5, height=4),
   save_fig_mito_change = ggsave("fig/mito_change.pdf", plot=fig_mito_change, device="pdf", width=4, height=16),
+  save_fig_mito_change_sep = ggsave("fig/mito_change_sep.pdf", plot=fig_mito_change_sep, device="pdf", width=8, height=16),
   save_fig_compartments = ggsave("fig/compartments.pdf", plot=fig_compartments, device="pdf", width=6, height=4),
   save_fig_compartment_fc = ggsave("fig/subcompartments_fc.pdf", plot=fig_compartment_fc, device="pdf", width=6, height=4)
 )
 
 save_tables <- drake_plan(
-  save_kgg_de = save_table(prot$kgg, "kgg_de.tsv"),
+  save_kgg_de = save_table(prot$kgg_norm, "kgg_de.tsv"),
   save_total_de = save_table(prot$total, "total_de.tsv"),
   save_kgg_mito = save_table(kgg_mito, "kgg_mito.tsv"),
   save_total_mito = save_table(tot_mito, "total_mito.tsv")

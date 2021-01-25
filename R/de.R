@@ -3,7 +3,7 @@ cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00",
 
 limma_de <- function(d) {
   tab <- d %>% 
-    select(id, ends_with("Ratio")) %>% 
+    select(id, ends_with("ratio")) %>% 
     column_to_rownames("id") %>% 
     as.matrix()
   fnorm <- apply(tab, 2, median)
@@ -11,7 +11,7 @@ limma_de <- function(d) {
   tab <- log2(tab)
   
   meta <- tibble(colname = colnames(tab)) %>% 
-    mutate(sample = str_remove(colname, "_.atio")) %>% 
+    mutate(sample = str_remove(colname, "_ratio")) %>% 
     mutate(group = str_remove(sample, "\\d") %>% as_factor() %>% fct_relevel("UT"))
 
   design_mat <- model.matrix(~group, data=meta)
@@ -31,6 +31,7 @@ limma_de <- function(d) {
 
 diff_expr <- function(prot) {
   prot$kgg <- limma_de(prot$kgg)
+  prot$kgg_norm <- limma_de(prot$kgg_norm)
   prot$total <- limma_de(prot$total)
   prot
 }
