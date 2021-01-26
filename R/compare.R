@@ -83,3 +83,36 @@ make_stat_mito <- function(mito, tot, kgg) {
   bind_rows(stat_mito, stat_kgg, stat_kgg_de, stat_tot)
 }
 
+reduce_sites <- function(x) {
+  tibble(full = x) %>% 
+    separate(full, c("gene_name", "site_position"), sep=":") %>% 
+    mutate(site_num = site_position %>% str_remove(";\\d+$") %>% as.numeric()) %>% 
+    group_by(gene_name) %>% 
+    arrange(site_num) %>% 
+    summarise(sites = paste(site_position, collapse=",") %>% paste0("(", ., ")")) %>% 
+    unite(final, c(gene_name, sites), sep=" ") %>% 
+    pull(final)
+}
+
+kgg_ineurons_overlap <- function(kgg, ineu) {
+  kggs <- kgg %>%
+    filter(in_mito & fdr < 0.05 & abs(log_fc) > 1.0) %>% 
+    unite(gs, c(gene_name, site_position), sep=":") %>% 
+    pull(gs) %>% unique()
+  ineus <- ineu %>%
+    filter(in_mito & (`Significant WT 6h vs UT` == "+" | `Significant WT 2h vs UT` == "+")) %>%
+    unite(gs, c(gene_name, site_position), sep=":") %>% 
+    pull(gs) %>% unique()
+  v <- list(
+    kgg = kggs,
+    ineu = ineus,
+    kgg_only = setdiff(kggs, ineus),
+    ineu_only = setdiff(ineus, kggs),
+    overlap = intersect(kggs, ineus)
+  )
+  vp <- map(v, reduce_sites)
+  list(
+    v = v,
+    vp = vp
+  )
+}

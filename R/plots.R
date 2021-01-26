@@ -212,15 +212,7 @@ plot_mito_fc <- function(dat) {
 }
 
 
-plot_ineurons_venn = function(kgg, ineu) {
-  kggs <- kgg %>% filter(in_mito & fdr < 0.05 & abs(log_fc) > 1.0) %>% pull(gene_name) %>% unique()
-  ineus <- ineu %>% filter(in_mito & (`Significant WT 6h vs UT` == "+" | `Significant WT 2h vs UT` == "+")) %>% pull(gene_name) %>% unique()
-  v <- list(
-    kgg = kggs,
-    ineurons = ineus
-  )
-  list(
-    v = v,
-    plot = euler(v)
-  )
+plot_ineurons_venn = function(ov) {
+  lst <- list(kGG = ov$v$kgg, iNeurons = ov$v$ineu)
+  euler(lst)
 }

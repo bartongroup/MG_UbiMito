@@ -48,6 +48,7 @@ compare_data <- drake_plan(
   tot_mito = merge_prot_mito(prot$total, mito, ubihub),
   all_data = merge_all(prot, mito, ubihub, bm_genes),
   ineurons_mito = merge_ineurons_mito(ineurons, mito),
+  kgg_ineu_over = kgg_ineurons_overlap(kgg_mito, ineurons_mito),
   
   stat_mito = make_stat_mito(mito_raw, tot_mito, kgg_mito)
 )
@@ -60,7 +61,8 @@ make_figures <- drake_plan(
   fig_compartments =  plot_stat_mito(stat_mito),
   fig_compartment_fc = plot_mito_fc(kgg_mito),
   
-  plt_venn = plot_ineurons_venn(kgg_mito, ineurons_mito)
+  
+  plt_venn = plot_ineurons_venn(kgg_ineu_over)
 )
 
 manuscript_figures <- drake_plan(

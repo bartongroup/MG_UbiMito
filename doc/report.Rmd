@@ -181,24 +181,24 @@ We use iNeurons data from file `mmc2.xlsx` spreadsheet `Kgg Quant NGN2 (AAVS) - 
 For comparison, we use our data with $|\log_2 FC| > 1$ and $FDR < 0.05$. Only proteins present in MitoCarta are shown. Here is the comparison result:
 
 ```{r plot_venn, fig.width=5, fig.height=3}
-loadd(plt_venn)
-plot(plt_venn$plot, quantities=TRUE) 
+loadd(kgg_ineu_over, plt_venn)
+plot(plt_venn, quantities=TRUE) 
 ```
 
 ### Only in KGG significant
 
 ```{r kgg_sig}
-plt_venn$v$kgg 
+kgg_ineu_over$vp$kgg_only %>% myKable(col.names="Significant kGG only")
 ```
 
-### Only in iNeurons significant
+### Only in iNeurons
 
 ```{r ineu_dig}
-plt_venn$v$ineurons 
+kgg_ineu_over$vp$ineu_only %>% myKable(col.names="Significant iNeurons only")
 ``` 
 
 ### Overlap
 
 ```{r ineu_kgg}
-intersect(plt_venn$v$kgg, plt_venn$v$ineurons) 
+kgg_ineu_over$vp$overlap %>% myKable(col.names="Overlap")
 ```
