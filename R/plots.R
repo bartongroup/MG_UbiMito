@@ -1,3 +1,7 @@
+okabe_ito_palette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
+tableau_10_palette <- ggthemes::tableau_color_pal(palette = "Tableau 10", type = "regular")(10)
+
+
 plot_volcano <- function(res, fc="logFC", p="PValue", fdr="FDR", group="contrast",
                         alpha=0.05, point.size=0.5, point.alpha=0.5, sel=NULL) {
   r <- res %>%
@@ -66,7 +70,7 @@ plot_mito_change <- function(dat, label.size = 8) {
       axis.text.y = element_text(hjust=0.5)
     ) +
     geom_tile(colour="grey") +
-    scale_fill_distiller(type="div", palette="BrBG", limits = c(-1,1)*max(abs(d$log_fc)), na.value="white") +
+    scale_fill_distiller(type="div", palette="PRGn", limits = c(-1,1)*max(abs(d$log_fc)), na.value="white") +
     labs(x="Site", y=NULL, fill=expression(log[2]~FC)) +
     scale_x_continuous(breaks=1:20, expand=expansion(mult = c(0, 0.05)))
   plot_grid(g1, g2, align="h", rel_widths = c(1,3))
@@ -134,7 +138,7 @@ plot_protein <- function(dat, gene, cex=3) {
     theme(panel.grid = element_blank(), legend.position = "none") +
     geom_hline(yintercept = 0, colour="grey80") +
     geom_beeswarm(cex=cex) +
-    scale_colour_manual(values=cbPalette) +
+    scale_colour_manual(values=okabe_ito_palette) +
     scale_shape_manual(values=c(1, 19)) +
     labs(x=NULL, y=expression(log[2]~Ratio))
   
@@ -162,7 +166,7 @@ plot_protein_sites <- function(dat, gene, cex=3) {
     geom_hline(yintercept = 0, colour="grey80") +
     geom_beeswarm(cex=cex) +
     facet_wrap(~site_position, nrow=1) +
-    scale_colour_manual(values=cbPalette) +
+    scale_colour_manual(values=okabe_ito_palette) +
     scale_shape_manual(values=c(1, 19)) +
     labs(x=NULL, y=expression(log[2]~Ratio))
 }
@@ -188,7 +192,7 @@ plot_stat_mito <- function(st) {
   ggplot(aes(x=sub_local, y=n, fill=stat)) +
     geom_bar(stat="identity", position=position_dodge2(padding=0), alpha=1, width=0.8, colour="grey30") +
     theme_bw() +
-    scale_fill_manual(values=cbPalette) +
+    scale_fill_manual(values=okabe_ito_palette) +
     theme(panel.grid = element_blank()) +
     scale_y_continuous(expand = expansion(mult=c(0,0.05))) +
     labs(x="Sub-compartment", y="Protein count", fill="Selection")
