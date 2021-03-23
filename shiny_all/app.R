@@ -15,7 +15,7 @@ all_genes <- dat$kgg$gene_id %>% unique()
 
 ui <- shinyUI(fluidPage(
   titlePanel("Mitochondrial ubiquitin landscape in neurons"),
-  p("This app allows for quick selection of proteins from the diGly experiment. For each selection of proteins/genes the two tables at the bottom show GO-term and Reactome pathway enrichment. tot is the total number of proteins with this term/pathway, sel - number in selection, expect - expected count in selection based on random distribution, enrich - enrichment over random background (observed / expected)."),
+  p("This app allows for quick selection of proteins from the diGly experiment. When Show->Proteins is selected, site position, logFC and FDR come from the peptide with the largest absolute fold change. For each selection of proteins the two tables at the bottom show GO-term and Reactome pathway enrichment. ", em("tot"), " is the total number of proteins with this term/pathway, ", em("sel"),  " - number in selection, ", em("expect"), " - expected count in selection based on random distribution, ", em("enrich"), " - enrichment over random background (observed / expected)."),
   sidebarLayout(
     sidebarPanel(
       radioButtons("show", "Show", choices=c("UB sites", "Proteins"), inline = TRUE),
@@ -65,7 +65,8 @@ server <- shinyServer(function(input, output, session) {
     tab <- dat$kgg %>% 
       filter(!!filter_expr & (log_fc >= vals$up_fc | log_fc <= -vals$down_fc))
     if(vals$show == "UB sites") {
-      tab <- tab %>% select(gene_name, description, site_position, log_fc, fdr, gene_id, ubi, sub)
+      tab <- tab %>%
+        select(gene_name, description, site_position, log_fc, fdr, gene_id, ubi, sub)
     } else {
       tab <- tab %>%
         group_by(gene_name, description) %>%
@@ -78,11 +79,20 @@ server <- shinyServer(function(input, output, session) {
   datatable_class <- "compact row-border hover"
   
   output$gene_table <- DT::renderDataTable({
-    tab <- getData() %>% select(-gene_id)
+    tab <- getData() %>% select(-gene_id) %>% 
+      rename(
+        "Gene name" = gene_name,
+        "Description" = description,
+        "Site position" = site_position,
+        "log2 FC" = log_fc,
+        "FDR" = fdr,
+        "UbiHub" = ubi,
+        "Subcompartment" = sub
+      )
     tab %>% 
       DT::datatable(class = datatable_class, caption="Selected genes") %>% 
       DT::formatStyle(colnames(tab), fontSize = '80%') %>% 
-      DT::formatSignif(c("log_fc", "fdr"), digits=2)
+      DT::formatSignif(c("log2 FC", "FDR"), digits=2)
   })
   
   enrichmentTable <- function(terms, cap) {
@@ -91,7 +101,15 @@ server <- shinyServer(function(input, output, session) {
     n <- length(sel)
     fe <- NULL
     if(n > 0) {
-      fe <- functionalEnrichment(all_genes, sel, terms, dat$gene2name) %>% select(-P)
+      fe <- functionalEnrichment(all_genes, sel, terms, dat$gene2name)
+      if(is.null(fe)) return(NULL)
+      fe %>%   
+        select(-P) %>% 
+        rename(
+          "Term ID" = term_id,
+          "Term name" = term_name,
+          "Genes" = ids
+        )
     }
     fe %>% 
       DT::datatable(class = datatable_class, caption=cap) %>% 

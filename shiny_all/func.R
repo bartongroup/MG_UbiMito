@@ -28,6 +28,8 @@ functionalEnrichment <- function(genes_all, genes_sel, term_data, gene2name = NU
   # size of the universe
   Nuni <- length(genes_all)
   
+  if(Nsel == Nuni) return(NULL)
+  
   # empty line for missing terms
   na_term <- term_info %>% slice(1) %>% mutate_all(~NA)
   
