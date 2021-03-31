@@ -35,7 +35,7 @@ functionalEnrichment <- function(genes_all, genes_sel, term_data, gene2name = NU
   
   res <- map_dfr(terms, function(term) {
     # all genes with the term 
-    tgenes <- term2gene[[term]]
+    tgenes <- intersect(term2gene[[term]], genes_all)
     # genes from selection with the term
     tgenes_sel <- intersect(tgenes, genes_sel)
     
