@@ -1,4 +1,4 @@
-# scp app.R  gjb-shiny-x@rstudio.compbio.dundee.ac.uk:/homes/gjb-shiny-x/shiny/private/marek_ubimito_all
+# scp app.R  gjb-shiny-x@rstudio.compbio.dundee.ac.uk:/homes/gjb-shiny-x/shiny/private/MitoNUb
 
 lib <- "/cluster/gjb_lab/mgierlinski/R_shiny/library/3.6"
 if(dir.exists(lib)) .libPaths(lib)
