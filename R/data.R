@@ -139,7 +139,8 @@ shiny_data_all <- function(all_data, bm_go, bm_go_slim, reactome) {
         sig = fdr < 0.05,
         ubi = replace_na(as.character(ubi_part), "-"),
         e2 = ubi == "E2",
-        e3 = str_detect(ubi, "E3"),
+        e3_simple = ubi == "E3 simple",
+        e3_complex = ubi == "E3 complex",
         sub = replace_na(as.character(sub_local), "-")
       ),
     bm_go = bm_go,
