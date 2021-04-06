@@ -118,7 +118,9 @@ read_ubihub <- function() {
   bind_rows(
     read_names("data/E2.txt", "E2"),
     read_names("data/E3_simple.txt", "E3 simple"),
-    read_names("data/E3_complex.txt", "E3 complex")
+    read_names("data/E3_complex.txt", "E3 complex"),
+    read_names("data/dub_nonusp.txt", "DUBs non-USP"),
+    read_names("data/dub_usp.txt", "DUBs USP")
   )
 }
 
@@ -141,6 +143,8 @@ shiny_data_all <- function(all_data, bm_go, bm_go_slim, reactome) {
         e2 = ubi == "E2",
         e3_simple = ubi == "E3 simple",
         e3_complex = ubi == "E3 complex",
+        dub_usp = ubi == "DUBs USP",
+        dub_nonusp = ubi == "DUBs non-USP",
         sub = replace_na(as.character(sub_local), "-")
       ),
     bm_go = bm_go,
