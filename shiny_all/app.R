@@ -16,8 +16,11 @@ all_genes <- dat$kgg$gene_id %>% unique()
 ###############################################################################
 
 ui <- shinyUI(fluidPage(
-  titlePanel("MitoNUb: mitochondrial ubiquitin landscape in neurons"),
-  p("This app allows for quick selection of proteins from the diGly experiment. When Show->Proteins is selected, site position, logFC and FDR come from the peptide with the largest absolute fold change. For each selection of proteins the two tables at the bottom show GO-term and Reactome pathway enrichment. ", em("tot"), " is the total number of proteins with this term/pathway, ", em("sel"),  " - number in selection, ", em("expect"), " - expected count in selection based on random distribution, ", em("enrich"), " - enrichment over random background (observed / expected)."),
+  fluidRow(titlePanel(div(
+    column(width=8, h1("MitoNUb: mitochondrial ubiquitin landscape in neurons")),
+    column(width=4, tags$img(src = "full_logo.png", height="50px"))
+  ))),
+  p("This app allows for quick selection of proteins from the diGly analysis of neurons reported in ", a(href = "https://www.biorxiv.org/content/10.1101/2021.04.01.438131v1", "Antico et al. (2021)", .noWS = "outside"), ". When Show->Proteins is selected, site position, logFC and FDR come from the peptide with the largest absolute fold change. For each selection of proteins the two tables at the bottom show GO-term and Reactome pathway enrichment. ", em("tot"), " is the total number of proteins with this term/pathway, ", em("sel"),  " - number in selection, ", em("expect"), " - expected count in selection based on random distribution, ", em("enrich"), " - enrichment over random background (observed / expected)."),
   sidebarLayout(
     sidebarPanel(
       radioButtons("show", "Show", choices=c("UB sites", "Proteins"), inline = TRUE),
