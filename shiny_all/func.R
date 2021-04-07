@@ -78,7 +78,6 @@ functionalEnrichment <- function(genes_all, genes_sel, term_data, gene2name = NU
 
 
 okabe_ito_palette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
-tableau_10_palette <- ggthemes::tableau_color_pal(palette = "Tableau 10", type = "regular")(10)
 
 
 plot_volcano <- function(res, sel, point.size=0.7) {
