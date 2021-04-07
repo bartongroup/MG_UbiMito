@@ -20,10 +20,10 @@ all_genes <- dat$kgg$gene_id %>% unique()
 
 ui <- shinyUI(fluidPage(
   
-  fluidRow(titlePanel(div(
-    column(width=6, h1("MitoNUb: mitochondrial ubiquitin landscape in neurons")),
+  fluidRow(div(
+    column(width=6, titlePanel("MitoNUb: mitochondrial ubiquitin landscape in neurons")),
     column(width=6, tags$a(img(src = "full_logo.png", height="60px"), href="https://www.ppu.mrc.ac.uk/"))
-  ))),
+  )),
   
   div(paste0("Version: ", VERSION, ", Last updated: ", DATE), style="font-size:8pt"),
   br(),
