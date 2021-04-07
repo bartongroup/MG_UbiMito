@@ -75,3 +75,21 @@ functionalEnrichment <- function(genes_all, genes_sel, term_data, gene2name = NU
     arrange(desc(enrich)) %>% 
     mutate(enrich = round(enrich, 1), expect = round(expect, 2))
 }
+
+
+okabe_ito_palette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
+tableau_10_palette <- ggthemes::tableau_color_pal(palette = "Tableau 10", type = "regular")(10)
+
+
+plot_volcano <- function(res, sel, point.size=0.7) {
+  lmt <- max(res %>% filter(fdr<0.05) %>% pull(p_value))
+  ggplot(res, aes(x=log_fc, y=-log10(p_value))) +
+    theme_bw() +
+    theme(panel.grid.minor = element_blank()) +
+    geom_point(colour = "grey70", size=point.size) +
+    geom_point(data = res %>% filter(id %in% sel), colour = "black", size=point.size) +
+    theme(legend.position = "none") +
+    geom_hline(yintercept = -log10(lmt), colour="red", linetype="dashed") +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.03))) +
+    labs(x=expression(log[2]~FC), y=expression(-log[10]~P))
+}

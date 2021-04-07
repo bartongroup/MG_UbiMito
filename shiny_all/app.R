@@ -21,8 +21,8 @@ all_genes <- dat$kgg$gene_id %>% unique()
 ui <- shinyUI(fluidPage(
   
   fluidRow(div(
-    column(width=6, titlePanel("MitoNUb: mitochondrial ubiquitin landscape in neurons")),
-    column(width=6, tags$a(img(src = "full_logo.png", height="60px"), href="https://www.ppu.mrc.ac.uk/"))
+    column(width=5, titlePanel("MitoNUb: mitochondrial ubiquitin landscape in neurons")),
+    column(width=7, tags$a(img(src = "full_logo.png", height="60px"), href="https://www.ppu.mrc.ac.uk/"))
   )),
   
   div(paste0("Version: ", VERSION, ", Last updated: ", DATE), style="font-size:8pt"),
@@ -56,6 +56,7 @@ ui <- shinyUI(fluidPage(
     mainPanel(
       tabsetPanel(type = "tabs",
         tabPanel("Gene selection", DT::dataTableOutput("gene_table", width="98%")),
+        tabPanel("Volcano plot", plotOutput("volcano", width="600px", height="500px")),
         tabPanel("GO enrichment", DT::dataTableOutput("go_enrichment", width="98%")),
         tabPanel("Reactome enrichment", DT::dataTableOutput("reactome_enrichment", width="98%"))
       )
@@ -78,8 +79,7 @@ server <- shinyServer(function(input, output, session) {
     )
   })
   
-  getData <- function() {
-    vals <- inputValues()
+  selectData <- function(vals) {
     checks_str <- ifelse(length(vals$checks) > 0, paste(vals$checks, collapse=" & "), "TRUE")
     ubi_str <-  ifelse(length(vals$ubi) > 0, paste(vals$ubi, collapse=" | "), "TRUE")
     filter_str <- paste("(", checks_str, ") & (", ubi_str, ")")
@@ -88,7 +88,12 @@ server <- shinyServer(function(input, output, session) {
     tab <- dat$kgg %>% 
       filter(!!filter_expr & (log_fc >= vals$up_fc | log_fc <= -vals$down_fc))
     if(nrow(tab) == 0) return(NULL)
-    
+    tab
+  }
+  
+  getData <- function() {
+    vals <- inputValues()
+    tab <- selectData(vals)
     if(vals$show == "UB sites") {
       tab <- tab %>%
         select(gene_name, description, site_position, log_fc, fdr, gene_id, ubi, sub)
@@ -164,6 +169,18 @@ server <- shinyServer(function(input, output, session) {
   
   output$reactome_enrichment <- DT::renderDataTable({
     enrichmentTable(dat$reactome, "Reactome pathway enrichment")
+  })
+  
+  output$volcano <- renderPlot({
+    vals <- inputValues()
+    d <- selectData(vals)
+    if(is.null(d)) {
+      sel <- NULL
+    } else {
+      sel <- d$id %>% unique()
+    }
+  
+    plot_volcano(dat$kgg, sel)
   })
   
   
