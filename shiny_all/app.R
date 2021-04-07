@@ -1,7 +1,7 @@
 # scp app.R  gjb-shiny-x@rstudio.compbio.dundee.ac.uk:/homes/gjb-shiny-x/shiny/MitoNUb
 
 VERSION <- "1.0"
-DATE <- "2021-04-06"
+DATE <- "2021-04-07"
 
 lib <- "/cluster/gjb_lab/mgierlinski/R_shiny/library/3.6"
 if(dir.exists(lib)) .libPaths(lib)
