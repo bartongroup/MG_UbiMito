@@ -27,13 +27,36 @@ merge_prot_mito <- function(dat, mito, ubihub, columns=NULL) {
 }
 
 
-merge_all <- function(prot, mito, ubihub, genes) {
+merge_total <- function(prot, mito, ubihub, genes) {
+  prot$total %>% 
+    left_join(mito, by=c("gene_name" = "genes")) %>% 
+    left_join(ubihub, by="gene_name") %>% 
+    select(
+      id,
+      uniprot,
+      gene_name,
+      description,
+      p_value,
+      fdr,
+      log_fc,
+      sub_local = MitoCarta3.0_SubMitoLocalization,
+      ubi_part
+    ) %>% 
+    mutate(in_mito = !is.na(sub_local)) %>% 
+    mutate(change = case_when(fdr < 0.05 & log_fc > 0 ~ "up", fdr < 0.05 & log_fc < 0 ~ "down", TRUE ~ "none") %>% factor(levels=c("none", "down", "up"))) %>% 
+    select(-description) %>% 
+    left_join(genes, by="gene_name") %>% 
+    mutate_at(c("ubi_part", "sub_local", "gene_biotype"), as_factor)
+}
+
+
+merge_kgg <- function(prot, mito, ubihub, genes) {
   prot$kgg_norm %>% 
     left_join(mito, by=c("gene_name" = "genes")) %>% 
     left_join(ubihub, by="gene_name") %>% 
     left_join(prot$total %>%
-        select(uniprot, numpep=`Number of Peptides Quantified`, tot_log_fc=log_fc, tot_fdr=fdr),
-        by="uniprot"
+                select(uniprot, numpep=`Number of Peptides Quantified`),
+              by="uniprot"
     ) %>% 
     select(
       id,
@@ -44,8 +67,6 @@ merge_all <- function(prot, mito, ubihub, genes) {
       p_value,
       fdr,
       log_fc,
-      tot_log_fc,
-      tot_fdr,
       sub_local = MitoCarta3.0_SubMitoLocalization,
       numpep,
       ubi_part

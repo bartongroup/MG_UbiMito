@@ -69,6 +69,8 @@ functionalEnrichment <- function(genes_all, genes_sel, term_data, gene2name = NU
     g
   })
   
+  if(nrow(res) == 0) return(NULL)
+  
   res %>% 
     mutate(P = p.adjust(P, method="BH")) %>% 
     filter(P <= sig_limit) %>% 
@@ -80,7 +82,7 @@ functionalEnrichment <- function(genes_all, genes_sel, term_data, gene2name = NU
 okabe_ito_palette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
 
 
-plot_volcano <- function(res, sel, point.size=0.7) {
+pl_volcano <- function(res, sel, point.size=0.7) {
   lmt <- max(res %>% filter(fdr<0.05) %>% pull(p_value))
   ggplot(res, aes(x=log_fc, y=-log10(p_value))) +
     theme_bw() +

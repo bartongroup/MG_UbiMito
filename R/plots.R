@@ -26,29 +26,30 @@ plot_volcano <- function(res, fc="logFC", p="PValue", fdr="FDR", group="contrast
 
 # A 'heatmap' plot of log FC for proteins in MitoCarta
 # Each tile is one ub site
-plot_mito_change <- function(dat, label.size = 8) {
-  d <- dat %>% 
+plot_mito_change <- function(kgg, tot, label.size = 8) {
+  d_kgg <- kgg %>% 
     filter(in_mito) %>%
     group_by(gene_name) %>%
     mutate(pos = str_extract(site_position, "^\\d+") %>% as.integer()) %>% 
     arrange(pos) %>% 
     mutate(site = 1:n()) %>% 
     ungroup() %>%
-    mutate(gene_name = as_factor(gene_name) %>% fct_rev) %>% 
     mutate(log_fc_sig = if_else(fdr < 0.05, log_fc, as.numeric(NA)))
-  d_tot <- d %>% 
-    select(gene_name, tot_log_fc) %>% 
-    distinct() %>% 
-    arrange(tot_log_fc)
+  d_tot <- d_kgg %>% 
+    select(gene_name) %>% 
+    left_join(tot, by="gene_name") %>% 
+    select(gene_name, log_fc) %>% 
+    arrange(log_fc) %>% 
+    distinct()
   genes <- d_tot$gene_name
   
-  d <- d %>% mutate(gene_name = factor(gene_name, levels = genes))
+  d_kgg <- d_kgg %>% mutate(gene_name = factor(gene_name, levels = genes))
   d_tot <- d_tot %>% mutate(gene_name = factor(gene_name, levels = genes))
   
-  lims <- c(-1,1)*max(abs(d$log_fc))
-  lims_tot <- c(-1,1)*max(abs(d_tot$tot_log_fc))
+  lims_kgg <- c(-1,1)*max(abs(d_kgg$log_fc))
+  lims_tot <- c(-1,1)*max(abs(d_tot$log_fc))
   
-  g1 <- ggplot(d_tot, aes(x="Total", y=gene_name, fill=tot_log_fc)) +
+  g1 <- ggplot(d_tot, aes(x="Total", y=gene_name, fill=log_fc)) +
     theme_bw() +
     theme(
       panel.grid = element_blank(),
@@ -62,7 +63,7 @@ plot_mito_change <- function(dat, label.size = 8) {
     scale_fill_distiller(type="div", palette="RdBu", limits = lims_tot, na.value="white") +
     labs(x=NULL, y=NULL, fill=expression(log[2]~FC[tot]))
   
-  g2 <- ggplot(d, aes(x=site, y=gene_name, fill=log_fc_sig)) +
+  g2 <- ggplot(d_kgg, aes(x=site, y=gene_name, fill=log_fc_sig)) +
     theme_bw() +
     theme(
       panel.grid = element_blank(),
@@ -70,7 +71,7 @@ plot_mito_change <- function(dat, label.size = 8) {
       axis.text.y = element_text(hjust=0.5)
     ) +
     geom_tile(colour="grey") +
-    scale_fill_distiller(type="div", palette="PRGn", limits = c(-1,1)*max(abs(d$log_fc)), na.value="white") +
+    scale_fill_distiller(type="div", palette="PRGn", limits = c(-1,1)*max(abs(d_kgg$log_fc)), na.value="white") +
     labs(x="Site", y=NULL, fill=expression(log[2]~FC)) +
     scale_x_continuous(breaks=1:20, expand=expansion(mult = c(0, 0.05)))
   plot_grid(g1, g2, align="h", rel_widths = c(1,3))

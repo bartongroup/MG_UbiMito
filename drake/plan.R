@@ -1,9 +1,9 @@
 get_biomart <- drake_plan(
   mart = useEnsembl(biomart="ensembl", dataset="mmusculus_gene_ensembl", version="100"),
   bm_genes = bm_fetch_genes_cached(mart, "cache/genes.rds") %>% mutate(gene_name = toupper(gene_name)),
-  bm_go = bm_fetch_go_cached(mart, all_data$gene_id, "cache/go_terms.rds"),
-  bm_go_slim = bm_fetch_go_cached(mart, all_data$gene_id, "cache/go_terms_slim.rds", slim=TRUE),
-  reactome = fetch_reactome_cached(all_data$gene_id, "cache/rectome.rds")
+  bm_go = bm_fetch_go_cached(mart, all_kgg$gene_id, "cache/go_terms.rds"),
+  bm_go_slim = bm_fetch_go_cached(mart, all_kgg$gene_id, "cache/go_terms_slim.rds", slim=TRUE),
+  reactome = fetch_reactome_cached(all_kgg$gene_id, "cache/rectome.rds")
 )
 
 get_data <- drake_plan(
@@ -46,7 +46,8 @@ compare_data <- drake_plan(
   kgg_mito_u = merge_prot_mito(prot$kgg_basal, mito, ubihub, "site_position"),
   kgg_mito = merge_prot_mito(prot$kgg_norm, mito, ubihub, "site_position"),
   tot_mito = merge_prot_mito(prot$total, mito, ubihub),
-  all_data = merge_all(prot, mito, ubihub, bm_genes),
+  all_kgg = merge_kgg(prot, mito, ubihub, bm_genes),
+  all_total = merge_total(prot, mito, ubihub, bm_genes),
   ineurons_mito = merge_ineurons_mito(ineurons, mito),
   kgg_ineu_over = kgg_ineurons_overlap(kgg_mito, ineurons_mito),
   
@@ -56,8 +57,8 @@ compare_data <- drake_plan(
 make_figures <- drake_plan(
   kgg_in_mito = kgg_mito %>% filter(in_mito) %>% pull(id),
   fig_kgg_volcano = plot_volcano(prot$kgg_norm, fc="log_fc",  fdr="fdr", p="p_value", sel=kgg_in_mito),
-  fig_mito_change = plot_mito_change(all_data),
-  fig_mito_change_sep = plot_mito_change_sep(all_data),
+  fig_mito_change = plot_mito_change(all_kgg, all_total),
+  fig_mito_change_sep = plot_mito_change_sep(all_kgg),
   fig_compartments =  plot_stat_mito(stat_mito),
   fig_compartment_fc = plot_mito_fc(kgg_mito),
   
@@ -81,6 +82,6 @@ save_tables <- drake_plan(
 )
 
 save_for_shiny <- drake_plan(
-  shiny_all = shiny_data_all(all_data, bm_go, bm_go_slim, reactome),
+  shiny_all = shiny_data_all(all_kgg, all_total, bm_go, bm_go_slim, reactome),
   save_shiny_all = saveRDS(shiny_all, file_out("shiny_all/data.rds")),
 )

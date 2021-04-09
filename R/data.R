@@ -131,14 +131,19 @@ save_table <- function(dat, file) {
 }
 
 
-shiny_data_all <- function(all_data, bm_go, bm_go_slim, reactome) {
-  gene2name <- set_names(all_data$gene_name, all_data$gene_id)
+shiny_data_all <- function(kgg, tot, bm_go, bm_go_slim, reactome) {
+  gn <- kgg %>% 
+    select(gene_name, gene_id) %>% 
+    bind_rows(select(tot, gene_name, gene_id)) %>% 
+    distinct()
+  gene2name <- set_names(gn$gene_name, gn$gene_id)
   bm_go$terms <- bm_go$terms %>% select(-term_description)
   bm_go_slim$terms <- bm_go_slim$terms %>% select(-term_description)
-  list(
-    kgg = all_data %>% 
+  
+  common <- c("uniprot", "gene_id", "gene_name", "description", "p_value", "fdr", "log_fc", "ubi", "e2", "e3_simple", "e3_complex", "dub_usp", "dub_nonusp", "in_mito", "sub")
+  prep <- function(x) {
+    x %>% 
       mutate(
-        sig = fdr < 0.05,
         ubi = replace_na(as.character(ubi_part), "-"),
         e2 = ubi == "E2",
         e3_simple = ubi == "E3 simple",
@@ -146,7 +151,24 @@ shiny_data_all <- function(all_data, bm_go, bm_go_slim, reactome) {
         dub_usp = ubi == "DUBs USP",
         dub_nonusp = ubi == "DUBs non-USP",
         sub = replace_na(as.character(sub_local), "-")
-      ),
+      ) 
+  }
+  
+  
+  s_kgg <- kgg %>% 
+    prep() %>% 
+    select(all_of(common), site_position) %>% 
+    relocate(site_position, .after = "gene_name") %>% 
+    mutate(sig = fdr <= 0.05, id = row_number())
+  
+  s_tot <- tot %>% 
+    prep() %>% 
+    select(all_of(common)) %>% 
+    mutate(sig = fdr <= 0.05, id = row_number())
+  
+  list(
+    kgg = s_kgg,
+    tot = s_tot,
     bm_go = bm_go,
     bm_go_slim = bm_go_slim,
     reactome = reactome,
