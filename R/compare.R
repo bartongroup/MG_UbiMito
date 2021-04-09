@@ -26,9 +26,16 @@ merge_prot_mito <- function(dat, mito, ubihub, columns=NULL) {
     select(-MitoCarta2.0_FDR)
 }
 
+# Some gene names correspond to multiple gene_id in Ensembl data, so we select only one
+dedup_genes <- function(bm, genelist) {
+  bm %>% 
+    filter(gene_name %in% genelist) %>% 
+    group_by(gene_name) %>% 
+    summarise(gene_id = first(gene_id), gene_name = first(gene_name), gene_biotype = first(gene_biotype), description = first(description))
+}
 
 merge_total <- function(prot, mito, ubihub, genes) {
-  prot$total %>% 
+  pt <- prot$total %>% 
     left_join(mito, by=c("gene_name" = "genes")) %>% 
     left_join(ubihub, by="gene_name") %>% 
     select(
@@ -44,14 +51,16 @@ merge_total <- function(prot, mito, ubihub, genes) {
     ) %>% 
     mutate(in_mito = !is.na(sub_local)) %>% 
     mutate(change = case_when(fdr < 0.05 & log_fc > 0 ~ "up", fdr < 0.05 & log_fc < 0 ~ "down", TRUE ~ "none") %>% factor(levels=c("none", "down", "up"))) %>% 
-    select(-description) %>% 
-    left_join(genes, by="gene_name") %>% 
+    select(-description)
+  lst <- pt$gene_name %>% unique()
+  pt %>% 
+    left_join(dedup_genes(genes, lst), by="gene_name") %>% 
     mutate_at(c("ubi_part", "sub_local", "gene_biotype"), as_factor)
 }
 
 
 merge_kgg <- function(prot, mito, ubihub, genes) {
-  prot$kgg_norm %>% 
+  pk <- prot$kgg_norm %>% 
     left_join(mito, by=c("gene_name" = "genes")) %>% 
     left_join(ubihub, by="gene_name") %>% 
     left_join(prot$total %>%
@@ -74,8 +83,10 @@ merge_kgg <- function(prot, mito, ubihub, genes) {
     mutate(in_mito = !is.na(sub_local), in_total = !is.na(numpep)) %>% 
     select(-c(numpep)) %>% 
     mutate(change = case_when(fdr < 0.05 & log_fc > 0 ~ "up", fdr < 0.05 & log_fc < 0 ~ "down", TRUE ~ "none") %>% factor(levels=c("none", "down", "up"))) %>% 
-    select(-description) %>% 
-    left_join(genes, by="gene_name") %>% 
+    select(-description)
+  lst <- pk$gene_name %>% unique()
+  pk %>% 
+    left_join(dedup_genes(genes, lst), by="gene_name") %>% 
     mutate_at(c("ubi_part", "sub_local", "gene_biotype"), as_factor)
 }
 
