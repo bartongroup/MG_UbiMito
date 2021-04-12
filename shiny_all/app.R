@@ -20,7 +20,27 @@ dat <- read_rds("data.rds")
 
 ###############################################################################
 
+
+css <- "
+#reverseSlider .irs-bar {
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    background: linear-gradient(to bottom, #DDD -50%, #FFF 150%);
+}
+#reverseSlider .irs-bar-edge {
+    border: 1px solid #ddd;
+    background: linear-gradient(to bottom, #DDD -50%, #FFF 150%);
+    border-right: 0;
+}
+#reverseSlider .irs-line {
+    background: #428bca;
+    border: 1px solid #428bca;
+}
+"
+
+
 ui <- shinyUI(fluidPage(
+  tags$style(type='text/css', css),
   
   fluidRow(div(
     column(width=5, titlePanel("MitoNUb: mitochondrial ubiquitin landscape in neurons")),
@@ -33,13 +53,16 @@ ui <- shinyUI(fluidPage(
   div(p("This app allows for quick selection of ubiquitilation sites and proteins from the diGly analysis of neurons stimulated with mitochondrial depolarisation, reported in ", a(href = "https://www.biorxiv.org/content/10.1101/2021.04.01.438131v1", "Antico et al. (2021)", .noWS = "outside"), ". For each selection of sites/proteins GO-term and Reactome pathway enrichment are calculated. ", em("tot"), " is the total number of proteins with this term/pathway, ", em("sel"),  " - number in selection, ", em("expect"), " - expected count in selection based on random distribution, ", em("enrich"), " - enrichment over random background (observed / expected)."), style="color:grey"),
   sidebarLayout(
     sidebarPanel(
+      
       radioButtons("select", "Select", choices=c("UB sites", "Total proteome"), inline = TRUE),
+      
       checkboxGroupInput("checks", "Select", 
         choices = c(
           "In MitoCarta" = "in_mito",
           "Significant DE" = "sig"
         ), selected=c("in_mito")
       ),
+      
       checkboxGroupInput("ubi", "Select in UbiHub",
         choices = c(
           "E2" = "e2",
@@ -49,8 +72,10 @@ ui <- shinyUI(fluidPage(
           "UBIs non-USP" = "dub_nonusp"
         ), selected = NULL
       ),
-      sliderInput("up_fc", "Upregulated FC limit", min=0, max=5, value=0, step=0.01),
-      sliderInput("down_fc", "Downregulated FC limit", min=-5, max=0, value=0, step=0.01),
+     
+      div(id = "reverseSlider", sliderInput("up_fc", "Positive FC limit", min=0, max=5, value=0, step=0.1)),
+      sliderInput("down_fc", "Negative FC limit", min=-5, max=0, value=0, step=0.1),
+      
       radioButtons("go_selection", "GO database", choices=c("Full", "Slim"), inline=TRUE),
       
       # tooltips
