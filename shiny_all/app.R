@@ -50,7 +50,7 @@ ui <- shinyUI(fluidPage(
   div(paste0("Version: ", VERSION, ", Last updated: ", DATE), style="font-size:8pt"),
   br(),
   
-  div(p("This app allows for quick selection of ubiquitilation sites and proteins from the diGly analysis of neurons stimulated with mitochondrial depolarisation, reported in ", a(href = "https://www.biorxiv.org/content/10.1101/2021.04.01.438131v1", "Antico et al. (2021)", .noWS = "outside"), ". For each selection of sites/proteins GO-term and Reactome pathway enrichment are calculated. ", em("tot"), " is the total number of proteins with this term/pathway, ", em("sel"),  " - number in selection, ", em("expect"), " - expected count in selection based on random distribution, ", em("enrich"), " - enrichment over random background (observed / expected)."), style="color:grey"),
+  div(p("This app allows for quick selection of ubiquitylation sites and proteins from the diGly analysis of neurons stimulated with mitochondrial depolarisation, reported in ", a(href = "https://www.biorxiv.org/content/10.1101/2021.04.01.438131v1", "Antico et al. (2021)", .noWS = "outside"), ". For each selection of sites/proteins GO-term and Reactome pathway enrichment are calculated. ", em("tot"), " is the total number of proteins with this term/pathway, ", em("sel"),  " - number in selection, ", em("expect"), " - expected count in selection based on random distribution, ", em("enrich"), " - enrichment over random background (observed / expected)."), style="color:grey"),
   sidebarLayout(
     sidebarPanel(
       
@@ -79,7 +79,7 @@ ui <- shinyUI(fluidPage(
       radioButtons("go_selection", "GO database", choices=c("Full", "Slim"), inline=TRUE),
       
       # tooltips
-      bsTooltip("select", "Selection between diGlycin ubiquitilation capture and total proteome results", placement = "right", options = list(container = "body")),
+      bsTooltip("select", "Selection between diGlycin ubiquitylation capture and total proteome results", placement = "right", options = list(container = "body")),
       bsTooltip("checks", "Selection of proteins in present MitoCarta; selection of UB sites/proteins significantly differentially expressed (FDR < 0.05) between mitochondrial depolarisation and control", placement = "right", options = list(container = "body")),
       bsTooltip("ubi", "Selection of categories from UbiHub", placement = "right", options = list(container = "body")),
       bsTooltip("up_fc", "Lower limit on positive log2 fold change between mitochondrial depolarisation and control", placement = "right", options = list(container = "body")),
