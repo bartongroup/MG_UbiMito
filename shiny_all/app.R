@@ -1,12 +1,13 @@
 # scp app.R  gjb-shiny-x@rstudio.compbio.dundee.ac.uk:/homes/gjb-shiny-x/shiny/MitoNUb
 
-VERSION <- "1.1"
-DATE <- "2021-04-09"
+VERSION <- "1.11"
+DATE <- "2021-04-12"
 
 lib <- "/cluster/gjb_lab/mgierlinski/R_shiny/library/3.6"
 if(dir.exists(lib)) .libPaths(lib)
 
 library(shiny)
+library(shinyBS)
 library(DT)
 library(tidyverse)
 source("func.R")
@@ -29,7 +30,7 @@ ui <- shinyUI(fluidPage(
   div(paste0("Version: ", VERSION, ", Last updated: ", DATE), style="font-size:8pt"),
   br(),
   
-  div(p("This app allows for quick selection of ubiquitilation sites and proteins from the diGly analysis of neurons reported in ", a(href = "https://www.biorxiv.org/content/10.1101/2021.04.01.438131v1", "Antico et al. (2021)", .noWS = "outside"), ". For each selection of sites/proteins GO-term and Reactome pathway enrichment are calculated. ", em("tot"), " is the total number of proteins with this term/pathway, ", em("sel"),  " - number in selection, ", em("expect"), " - expected count in selection based on random distribution, ", em("enrich"), " - enrichment over random background (observed / expected)."), style="color:grey"),
+  div(p("This app allows for quick selection of ubiquitilation sites and proteins from the diGly analysis of neurons stimulated with mitochondrial depolarisation, reported in ", a(href = "https://www.biorxiv.org/content/10.1101/2021.04.01.438131v1", "Antico et al. (2021)", .noWS = "outside"), ". For each selection of sites/proteins GO-term and Reactome pathway enrichment are calculated. ", em("tot"), " is the total number of proteins with this term/pathway, ", em("sel"),  " - number in selection, ", em("expect"), " - expected count in selection based on random distribution, ", em("enrich"), " - enrichment over random background (observed / expected)."), style="color:grey"),
   sidebarLayout(
     sidebarPanel(
       radioButtons("select", "Select", choices=c("UB sites", "Total proteome"), inline = TRUE),
@@ -49,8 +50,16 @@ ui <- shinyUI(fluidPage(
         ), selected = NULL
       ),
       sliderInput("up_fc", "Upregulated FC limit", min=0, max=5, value=0, step=0.01),
-      sliderInput("down_fc", "Downregulated FC limit", min=0, max=5, value=0, step=0.01),
+      sliderInput("down_fc", "Downregulated FC limit", min=-5, max=0, value=0, step=0.01),
       radioButtons("go_selection", "GO database", choices=c("Full", "Slim"), inline=TRUE),
+      
+      # tooltips
+      bsTooltip("select", "Selection between diGlycin ubiquitilation capture and total proteome results", placement = "right", options = list(container = "body")),
+      bsTooltip("checks", "Selection of proteins in present MitoCarta; selection of UB sites/proteins significantly differentially expressed (FDR < 0.05) between mitochondrial depolarisation and control", placement = "right", options = list(container = "body")),
+      bsTooltip("ubi", "Selection of categories from UbiHub", placement = "right", options = list(container = "body")),
+      bsTooltip("up_fc", "Lower limit on positive log2 fold change between mitochondrial depolarisation and control", placement = "right", options = list(container = "body")),
+      bsTooltip("down_fc", "Upper limit on negative log2 fold change between mitochondrial depolarisation and control", placement = "right", options = list(container = "body")),
+      bsTooltip("go_selection", "Whether to use full GO-term database or a reduced GO-slim database", placement = "right", options = list(container = "body")),
       width = 3
     ),
     mainPanel(
@@ -74,7 +83,7 @@ server <- shinyServer(function(input, output, session) {
       checks = input$checks,
       ubi = input$ubi,
       up_fc = input$up_fc,
-      down_fc = input$down_fc,
+      down_fc = -input$down_fc,
       go = input$go_selection
     )
   })
