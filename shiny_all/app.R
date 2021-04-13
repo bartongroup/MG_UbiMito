@@ -43,7 +43,7 @@ ui <- shinyUI(fluidPage(
   tags$style(type='text/css', css),
   
   fluidRow(div(
-    column(width=5, titlePanel("MitoNUb: mitochondrial ubiquitin landscape in neurons")),
+    column(width=5, uiOutput(outputId = "title", style = "font-size:100%")),
     column(width=7, tags$a(img(src = "full_logo.png", height="60px"), href="https://www.ppu.mrc.ac.uk/"))
   )),
   
@@ -101,6 +101,10 @@ ui <- shinyUI(fluidPage(
 ###############################################################################
 
 server <- shinyServer(function(input, output, session) {
+  
+  output$title <- renderText({
+    HTML(paste0("<h1><b>MitoNUb</b>: <b>Mito</b>chondrial <b>N</b>euron <b>Ub</b>iquitin landscape</h1>"))
+  })
   
   input_values <- reactive({
     list(
