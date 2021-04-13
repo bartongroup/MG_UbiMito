@@ -73,8 +73,8 @@ ui <- shinyUI(fluidPage(
         ), selected = NULL
       ),
      
-      div(id = "reverseSlider", sliderInput("up_fc", "Positive FC limit", min=0, max=5, value=0, step=0.1)),
-      sliderInput("down_fc", "Negative FC limit", min=-5, max=0, value=0, step=0.1),
+      div(id = "reverseSlider", sliderInput("up_fc", "Positive FC limit", min=0, max=6, value=0, step=0.1)),
+      sliderInput("down_fc", "Negative FC limit", min=-6, max=0, value=0, step=0.1),
       
       radioButtons("go_selection", "GO database", choices=c("Full", "Slim"), inline=TRUE),
       
