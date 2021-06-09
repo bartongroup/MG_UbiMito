@@ -1,13 +1,14 @@
-# Enrichment function
-#
-# Performs hypergeometric test.
-# Input: genes_sel and genes_all are vectors with gene IDs.
-# term_data: enrichment term data
-# gene2name: named vector to change genes ids into gene names
-# term_info: data frame with columns term and other columns with name, description and so on.
-# These additional columns will be included in the output.
-
-
+#' Functional enrichment using Fisher's test
+#'
+#' @param genes_all - a vector with all feature (gene, protein, etc.) ids (universe)
+#' @param genes_sel - a vector with a selection of feature ids
+#' @param term_data - term_data: an object with term data, a list with two fields 1) term2gene - a list of vectors, term -> [gene_id1, gene_id1, ...], 2) term - data frame with columns 'term_id' and any other columns with name, description and so on.
+#' @param gene2name - a named vector to change feature ids into feature names
+#' @param min_count - minimum number of features to consider for a given term; terms with fewer features will be ignored
+#' @param sig_limit - significance limit for enriched terms (multiple test corrected)
+#'
+#' @return A tibble with results.
+#' @export
 functionalEnrichment <- function(genes_all, genes_sel, term_data, gene2name = NULL,
                                  min_count=3, sig_limit=0.05) {
   
