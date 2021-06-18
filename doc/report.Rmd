@@ -9,7 +9,7 @@ output:
 
 Collaborators: Odetta Antico, Miratul Muqit
 
-[Interactive data expolorer](https://shiny.compbio.dundee.ac.uk/private//marek_ubimito_all)
+[Interactive data expolorer](https://shiny.compbio.dundee.ac.uk/private/marek_ubimito_all)
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(

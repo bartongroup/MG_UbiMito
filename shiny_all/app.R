@@ -3,7 +3,7 @@
 VERSION <- "1.11"
 DATE <- "2021-04-12"
 
-lib <- "/cluster/gjb_lab/mgierlinski/R_shiny/library/3.6"
+lib <- "/cluster/gjb_lab/mgierlinski/R_shiny/library/4.1"
 if(dir.exists(lib)) .libPaths(lib)
 
 library(shiny)
