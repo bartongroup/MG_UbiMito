@@ -44,7 +44,7 @@ ui <- shinyUI(fluidPage(
   
   fluidRow(div(
     column(width=5, uiOutput(outputId = "title", style = "font-size:100%")),
-    column(width=7, tags$a(img(src = "full_logo.png", height="60px"), href="https://www.ppu.mrc.ac.uk/"))
+    column(width=7, tags$a(img(src = "full_logo_2.png", height="70px", style="padding-top: 15px"), href="https://www.ppu.mrc.ac.uk/"))
   )),
   
   div(paste0("Version: ", VERSION, ", Last updated: ", DATE), style="font-size:8pt"),
