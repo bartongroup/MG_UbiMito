@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
   echo = FALSE,
   cache = TRUE
 )
-library(drake)
+library(targets)
 library(kableExtra)
 library(eulerr)
 library(tidyverse)
@@ -37,7 +37,7 @@ public_html <- "http://www.compbio.dundee.ac.uk/user/mgierlinski/ubimito"
 
 Data came from quantitative diGlycine (diGly) capture proteomics to identify Parkin-dependent ubiquitylation. The experiment was carried out in two conditions, unstimulated/basal (UT) and stimulated/depolarised (AO) in five replicates each. The total proteome was also analysed.
 
-There are `r N(readd(kgg_n_sites))` sites on `r N(readd(kgg_n_prot))` individual proteins in the diGly data. There are `r N(readd(total_n_prot))` proteins in the total proteome data.
+There are `r N(tar_read(kgg_n_sites))` sites on `r N(tar_read(kgg_n_prot))` individual proteins in the diGly data. There are `r N(tar_read(total_n_prot))` proteins in the total proteome data.
 
 kGG data were normalised to the total proteome, sample-to-sample. That is, UT1_ratio from kGG was divided by UT1_ratio from total proteome and so on, for all samples. kGG proteins not present in the total proteome were rejected.
 
@@ -45,10 +45,10 @@ kGG data were normalised to the total proteome, sample-to-sample. That is, UT1_r
 
 ### MitoCarta
 
-We use [MitoCarta 3.0](https://www.broadinstitute.org/files/shared/metabolism/mitocarta/human.mitocarta3.0.html) to identify mitochondrial proteins. This database contains `r N(readd(n_mito))` genes, located it the following subcompartments:
+We use [MitoCarta 3.0](https://www.broadinstitute.org/files/shared/metabolism/mitocarta/human.mitocarta3.0.html) to identify mitochondrial proteins. This database contains `r N(tar_read(n_mito))` genes, located it the following subcompartments:
 
 ```{r mito_loc}
-readd(stat_mito) %>% myKable()
+tar_read(stat_mito) %>% myKable()
 ```
 
 ### E2 enzymes and E3 ligases
@@ -56,14 +56,14 @@ readd(stat_mito) %>% myKable()
 We identify E2 and E3 using [UbiHub](https://ubihub.thesgc.org/static/UbiHub.html). We have the following numbers of enzymes and ligases in this database:
 
 ```{r ubihub}
-readd(ubihub) %>% group_by(ubi_part) %>% tally() %>% rename(type = ubi_part) %>% myKable()
+tar_read(ubihub) %>% group_by(ubi_part) %>% tally() %>% rename(type = ubi_part) %>% myKable()
 ```
 
 
 ## Results
 
 ```{r ubi_tot_mito}
-loadd(kgg_mito, tot_mito)
+tar_load(c(kgg_mito, tot_mito))
 
 ```
 
@@ -73,12 +73,12 @@ Proteomics data came with Welch's t-test p-values and fold changes. I am not sur
 
 Here, we re-do differential expression analysis using a more sophisticated tool, `limmma` and making sure that p-values are corrected for multiple tests. `limma` borrows information across features (sites) in order to moderate variance. We also normalise each ratio to its median. The raw data medians are close, but not equal to one, so this step reduces variance between replicates slightly and improves power of the test.
 
-Result is not very different from the original Welch's tests. Without the normalisation step, the numbers of significant sites (diGly) is very similar. With normalisation and using `limma`, we get `r N(readd(n_kgg_de_fdr))` statistically significant sites. The Welch's p-value gives `r N(readd(n_kgg_de_welch))` DE sites. The difference is mostly due to normalisation step.
+Result is not very different from the original Welch's tests. Without the normalisation step, the numbers of significant sites (diGly) is very similar. With normalisation and using `limma`, we get `r N(tar_read(n_kgg_de_fdr))` statistically significant sites. The Welch's p-value gives `r N(tar_read(n_kgg_de_welch))` DE sites. The difference is mostly due to normalisation step.
 
 This figure shows a volcano plot. Black points indicate data present in MitoCarta. The dashed horizontal line shows the significance limit, FDR = 0.05.
 
 ```{r kgg_volcano, fig.width=4, fig.height=4}
-readd(fig_kgg_volcano)
+tar_read(fig_kgg_volcano)
 kgg_de_link <- file.path(public_html, "tab/kgg_de.tsv")
 ```
 
@@ -87,7 +87,7 @@ kgg_de_link <- file.path(public_html, "tab/kgg_de.tsv")
 
 ### Identity of ubiquitylated proteins
 
-We have `r N(readd(kgg_n_prot_basal))` proteins. Out of these, there are `r N(readd(n_kgg_in_mito))` diGly proteins in MitoCarta database. None of them is E2 or E3.
+We have `r N(tar_read(kgg_n_prot_basal))` proteins. Out of these, there are `r N(tar_read(n_kgg_in_mito))` diGly proteins in MitoCarta database. None of them is E2 or E3.
 
 ```{r datatable_settings, message=FALSE, warning=FALSE}
 dummy <- DT:::DT2BSClass(c('compact', 'cell-border'))
@@ -96,7 +96,7 @@ dummy <- DT:::DT2BSClass(c('compact', 'cell-border'))
 This table shows the number of diGly proteins associated with each sub-compartment in MitoCarta:
 
 ```{r kgg_sub}
-readd(counts_kgg_mito) %>% 
+tar_read(counts_kgg_mito) %>% 
   myKable()
 ```
 
@@ -109,13 +109,13 @@ This figure shows distribution of counts between sub-compartments and four selec
 
 
 ```{r fig_comp_mito, fig.width=6, fig.height=4}
-readd(fig_compartments)
+tar_read(fig_compartments)
 ```
 
 The next figure shows logFC in each compartment:
 
 ```{r fig_comp_fc, fig.width=6, fig.height=4}
-readd(fig_compartment_fc)
+tar_read(fig_compartment_fc)
 ```
 
 Full table with all sites:
@@ -165,12 +165,12 @@ total_mito_link <- file.path(public_html, "tab/total_mito.tsv")
 The next figure shows how individual sites in each protein change upon stimulation. Only diGly proteins present in MitoCarta are shown. Ubiquitylation sites are simply indexed 1, 2, 3,... from the smallest to the largest position in the protein. White fill indicates non-significant change (FDR > 0.05).
 
 ```{r mito_change, fig.width=5, fig.height=16}
-readd(fig_mito_change) 
+tar_read(fig_mito_change) 
 ```
 
 The next figure is a different visualisation of the same data. For each protein (present in MitoCarta) all sites are shown. The length of the line for each site is proportional to $|\log_2 FC|$ between UT and AO. The colour of the point indicates: red - significant positive fold change, blue - significant negative fold change, grey - non-significant change.
 
 ```{r mito_change_sep, fig.width=10, fig.height=20}
-readd(fig_mito_change_sep)
+tar_read(fig_mito_change_sep)
 ```
 

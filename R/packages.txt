@@ -1,0 +1,7 @@
+tidyverse
+biomaRt
+limma
+eulerr
+ggbeeswarm
+cowplot
+qs
